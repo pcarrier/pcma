@@ -53,10 +53,10 @@ By convention, if the request failed, a string indicating the error follows.
 
 EXAMPLES
 ~~~~~~~~
-  ['ping'] → [true]
-  ['lock', '/tmp/foo'] → [true, ['/tmp/foo', 16]]
-  ['lock', '/tmp/doesnotexist'] → [false, 'mlockfile_lock failed']
-  ['list'] → [true, [['/tmp/foo', 16], ['/tmp/bar', 1024]]]
+  ["ping"] → [true]
+  ["lock", "/tmp/foo"] → [true, ["/tmp/foo", 16]]
+  ["lock", "/tmp/doesnotexist"] → [false, "mlockfile_lock failed"]
+  ["list"] → [true, [["/tmp/foo", 16], ["/tmp/bar", 1024]]]
 
 COMMANDS
 ~~~~~~~~
