@@ -1,0 +1,40 @@
+PCMAD(1)
+========
+:doctype: manpage
+
+
+NAME
+----
+pcmad - Page Cache My Assets daemon
+
+
+SYNOPSIS
+--------
+*pcmad* [-v...] [-e 'ENDPOINT']
+
+
+DESCRIPTION
+-----------
+The pcmad(1) daemon listens for requests and executes them.
+Requests are documented in +pcma(5)+.
+
+OPTIONS
+-------
+*-v*:
+  Increase the verbosity. Useful up to 3 times. At least one occurence is recommended.
+
+*-e* 'ENDPOINT':
+  Specify the endpoint to bind to. Defaults to +ipc:///tmp/pcma.socket+.
+
+BUGS
+----
+See https://github.com/pcarrier/pcma/issues
+
+AUTHOR
+------
++pcma+ was written by Pierre Carrier <pierre@spotify.com>.
+
+COPYING
+-------
+The +pcma+ license is directly derived from ISC.
+Please refer to +COPYING+ in the distribution.

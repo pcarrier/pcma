@@ -1,0 +1,10 @@
+[Unit]
+Description=Page Cache My Assets daemon
+
+[Service]
+ExecStart=@bindir@/pcmad
+OOMScoreAdjust=-1000
+StandardOutput=syslog
+
+[Install]
+WantedBy=multi-user.target

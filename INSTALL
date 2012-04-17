@@ -1,0 +1,3 @@
+I hate autotools, but it should be easy when things go right:
+  $ ./build.sh --prefix=/usr
+  # make install

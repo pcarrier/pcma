@@ -1,0 +1,89 @@
+PCMA(5)
+=======
+:doctype: manpage
+
+NAME
+----
+pcma - Page Cache My Assets
+
+SYNOPSIS
+--------
++pcma(5)+ provides a network protocol, server and reference client to warm up
+the page cache and avoid page cache eviction.
+
+IMPLEMENTATION
+--------------
+- Protocol based on ØMQ and MessagePack
+- Single-threaded C server. See +pcmad(1)+.
+- Single-threaded, single command C client. See +pcmac(1)+.
+- Trivial test client providing an example Ruby implementation, +test/suite.rb+.
+- Files are locked using +mmap(2)+ and +mlock(2)+.
+- Locking only affects the beginning of the file, up to the size observed
+  when locking. Files can be re-locked if needed.
+
+WARNING
+-------
+If you do not fully understand the implications of locking pages in your
+operating system's virtual memory, please don't.
+
+I will not be held responsible for your poor memory management decisions.
++pcma(5)+ is a dangerous tool, you could hurt your systems badly.
+
+Furthermore, the provided Upstart and systemd scripts tune the OOM killer
+never to kill +pcmad(1)+.
+Under memory pressure, even critical services might go down first.
+This is the expected behaviour for our use case, but you might want to change
+this.
+
+Note that even if the memory will be completely blocked, it will appear as
++cached+ under GNU/Linux's +free+.
+
+PROTOCOL
+--------
+As MessagePack is a binary protocol, we use the equivalent JSON for readability.
+
+DESIGN
+~~~~~~
+Request-reply model. Both requests and replies are MessagePack arrays.
+
+The first item of every reply is a boolean indicating whether the request
+was successful, followed by an optional return.
+If the request failed, a string indicating the error follows by convention.
+
+EXAMPLES
+~~~~~~~~
+* +[\'ping']+ → +[true]+
+* +[\'lock', \'/tmp/foo']+ → +[true, [\'/tmp/foo', 16]]+
+* +[\'lock', \'/tmp/doesnotexist']+ → +[false, \'mlockfile_lock failed']+
+* +[\'list']+ → +[true, [[\'/tmp/foo', 16], [\'/tmp/bar', 1024]]]+
+
+COMMANDS
+~~~~~~~~
+
+ping
+^^^^
+* Description: doesn't do anything.
+* Parameters: none
+* Returns: nothing (+[true]+ in case of success, +[false, ...?]+ otherwise).
+
+list
+^^^^
+* Description: lists all files currently locked.
+* Parameters: none
+* Returns: Array of files locked in memory.
+  Each file is an array +[path, size in bytes]+.
+  We might append extra objects to each file array as we see fit.
+
+lock
+^^^^
+* Description: Locks a file in memory.
+  If this file is already locked, it will be re-locked and its new size will
+  be taken into account. The previous lock is kept until completion.
+* Parameters: path of the file
+* Returns: corresponding file object (see +list+).
+
+unlock
+^^^^^^
+* Description: Unlocks a file.
+* Parameters: path of the file
+* Returns: nothing (see +ping+).

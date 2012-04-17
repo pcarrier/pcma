@@ -1,0 +1,13 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_installinit:
+	dh_installinit --no-start --name=pcmad
+
+.PHONY: build
+build:
+	dh $@ --before dh_auto_configure
+	./prepare.sh
+	dh $@ --remaining

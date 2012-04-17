@@ -1,0 +1,1 @@
+man/pcma.5.asciidoc

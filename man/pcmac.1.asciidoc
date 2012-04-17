@@ -1,0 +1,56 @@
+PCMAC(1)
+========
+:doctype: manpage
+
+
+NAME
+----
+pcmac - Page Cache My Assets client
+
+
+SYNOPSIS
+--------
+*pcmad* [-v...] [-e 'ENDPOINT'] 'REQUEST' ['PARAMETER'...]
+
+
+DESCRIPTION
+-----------
+The pcmac(1) client sends a request to a pcma server, prints the returned value
+if any and exits accordingly. Requests are documented in +pcma(5)+.
+
+
+OPTIONS
+-------
+*-v*:
+  Increase the verbosity. Useful up to 3 times. At least one occurence is recommended.
+
+*-e* 'ENDPOINT':
+  Specify the endpoint to connect to. Defaults to +ipc:///tmp/pcma.socket+.
+
+
+EXIT STATUS
+-----------
+*0*::
+  Success
+
+*1*::
+  Local or communication failure
+
+*2*::
+  Remote failure
+
+
+BUGS
+----
+See https://github.com/pcarrier/pcma/issues
+
+
+AUTHOR
+------
++pcma+ was written by Pierre Carrier <pierre@spotify.com>.
+
+
+COPYING
+-------
+The +pcma+ license is directly derived from ISC.
+Please refer to +COPYING+ in the distribution.
