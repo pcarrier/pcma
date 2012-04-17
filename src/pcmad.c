@@ -270,7 +270,7 @@ int loop(void *socket)
         }
     }
 
-    return (-42); /* Yiipee! */
+    return (-42);               /* Yiipee! */
 }
 
 void help(char *name)
@@ -279,9 +279,7 @@ void help(char *name)
     if (!disp_name)
         disp_name = &default_name;
 
-    fprintf(stderr,
-            "Usage: %s [-v...] [-e ENDPOINT]\n",
-            *disp_name);
+    fprintf(stderr, "Usage: %s [-v...] [-e ENDPOINT]\n", *disp_name);
     exit(EXIT_FAILURE);
 }
 
@@ -292,7 +290,7 @@ int main(int argc, char **argv)
     char **endpoint = &default_ep;
 
     while ((opt = getopt(argc, argv, "ve:")) != -1) {
-        switch(opt) {
+        switch (opt) {
         case 'v':
             log_level++;
             break;
@@ -300,7 +298,7 @@ int main(int argc, char **argv)
             endpoint = &optarg;
             break;
         default:
-            if(argc > 0)
+            if (argc > 0)
                 help(argv[0]);
             else
                 help(NULL);

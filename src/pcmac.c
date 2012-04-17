@@ -17,7 +17,7 @@ int pcma_req_packfn(msgpack_packer * pk, void *req)
 {
     int i, len;
     char *str;
-    struct pcma_req *rreq = (struct pcma_req *)req;
+    struct pcma_req *rreq = (struct pcma_req *) req;
 
     msgpack_pack_array(pk, (rreq->argc));
     for (i = 0; i < rreq->argc; i++) {
@@ -29,7 +29,8 @@ int pcma_req_packfn(msgpack_packer * pk, void *req)
     return (0);
 }
 
-int handle_rep(zmq_msg_t * msg) {
+int handle_rep(zmq_msg_t * msg)
+{
     msgpack_object obj;
     msgpack_unpacked pack;
     char *errmsg;
@@ -60,7 +61,8 @@ int handle_rep(zmq_msg_t * msg) {
     }
 
     if (obj.via.array.ptr[0].via.boolean == false) {
-        if (obj.via.array.size > 1 && obj.via.array.ptr[1].type == MSGPACK_OBJECT_RAW) {
+        if (obj.via.array.size > 1
+            && obj.via.array.ptr[1].type == MSGPACK_OBJECT_RAW) {
             errmsg = raw_to_string(&(obj.via.array.ptr[1].via.raw));
             if (errmsg) {
                 LOG_SERV("%s\n", errmsg);
@@ -73,7 +75,7 @@ int handle_rep(zmq_msg_t * msg) {
 
     if (obj.via.array.size > 1) {
         /* Technically speaking unspecified, but I feel lazy */
-        msgpack_object_print (stdout, obj.via.array.ptr[1]);
+        msgpack_object_print(stdout, obj.via.array.ptr[1]);
         printf("\n");
     }
     return (0);
@@ -101,7 +103,7 @@ int main(int argc, char **argv)
     zmq_msg_t msg;
 
     while ((opt = getopt(argc, argv, "ve:t:")) != -1) {
-        switch(opt) {
+        switch (opt) {
         case 'v':
             log_level++;
             break;
@@ -116,7 +118,7 @@ int main(int argc, char **argv)
             }
             break;
         default:
-            if(argc > 0)
+            if (argc > 0)
                 help(argv[0]);
             else
                 help(NULL);
@@ -124,7 +126,7 @@ int main(int argc, char **argv)
     }
 
     LOG_INFO("using endpoint %s\n", *endpoint);
-    if(timeout >= 0) {
+    if (timeout >= 0) {
         LOG_INFO("using a %li ms timeout\n", timeout);
     }
 

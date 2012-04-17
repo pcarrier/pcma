@@ -24,7 +24,7 @@ void zmq_free_helper(void *data, void *hint)
 }
 
 int pcma_send(void *socket,
-               int (*pack_fn) (msgpack_packer *, void *), void *data)
+              int (*pack_fn) (msgpack_packer *, void *), void *data)
 {
     zmq_msg_t msg;
 
