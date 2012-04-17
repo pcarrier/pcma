@@ -109,9 +109,7 @@ size_t mfl_length(struct mlockfile_list * list)
     return counter;
 }
 
-struct mlockfile_list *mfl_find_path(struct
-                                     mlockfile_list
-                                     *head, char *path)
+struct mlockfile_list *mfl_find_path(struct mlockfile_list *head, char *path)
 {
     struct mlockfile_list *itr = head;
     while (itr != NULL) {
