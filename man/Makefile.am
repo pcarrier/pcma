@@ -1,5 +1,7 @@
 EXTRA_DIST = pcma.5.asciidoc pcmac.1.asciidoc pcmad.1.asciidoc
-man_MANS = pcma.5 pcmad.1 pcmac.1
+manpages = pcma.5 pcmac.1 pcmad.1
+CLEANFILES = $(manpages)
+man_MANS = $(manpages)
 
 pcma.5: pcma.5.asciidoc
 	@A2X@ -f manpage pcma.5.asciidoc
