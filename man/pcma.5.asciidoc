@@ -35,7 +35,7 @@ Under memory pressure, even critical services might go down first.
 This is the expected behaviour for our use case, but you might want to change
 this.
 
-Note that even if the memory will be completely blocked, it will appear as
+Note that even if the memory will be completely locked in RAM, it will appear as
 +cached+ under GNU/Linux's +free+.
 
 PROTOCOL
