@@ -252,7 +252,7 @@ int loop(void *socket)
     for (;;) {
         if (zmq_msg_init(&msg) < 0) {
             perror("zmq_msg_init");
-            goto loop_goes_on;
+            continue;
         }
 
         if (zmq_recv(socket, &msg, 0) < 0) {
@@ -267,15 +267,10 @@ int loop(void *socket)
 
         if (zmq_msg_close(&msg) < 0) {
             perror("zmq_msg_close");
-            goto loop_goes_on;
         }
-
-        continue;
-
-      loop_goes_on:
-        LOG_ERROR("loop must go on!\n");
     }
-    return (-1);
+
+    return (-42); /* Yiipee! */
 }
 
 void help(char *name)
