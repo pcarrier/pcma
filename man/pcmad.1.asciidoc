@@ -24,7 +24,7 @@ OPTIONS
   Increase the verbosity. Useful up to 3 times. At least one occurence is recommended.
 
 *-e* 'ENDPOINT':
-  Specify the endpoint to bind to. Defaults to +ipc:///tmp/pcma.socket+.
+  Specify the endpoint to bind to. Defaults to +ipc:///var/run/pcma.socket+.
 
 BUGS
 ----

@@ -25,7 +25,7 @@ OPTIONS
   Increase the verbosity. Useful up to 3 times. At least one occurence is recommended.
 
 *-e* 'ENDPOINT':
-  Specify the endpoint to connect to. Defaults to +ipc:///tmp/pcma.socket+.
+  Specify the endpoint to connect to. Defaults to +ipc:///var/run/pcma.socket+.
 
 
 EXIT STATUS
@@ -38,6 +38,11 @@ EXIT STATUS
 
 *2*::
   Remote failure
+
+EXAMPLES
+--------
+
+  pcmac list
 
 
 BUGS

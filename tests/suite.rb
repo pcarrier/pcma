@@ -7,7 +7,7 @@ begin; require 'rubygems'; rescue; end
 ctx = ZMQ::Context.new(1)
 
 $sock = ctx.socket(ZMQ::REQ)
-$sock.connect("ipc:///tmp/pcma.socket")
+$sock.connect("ipc:///var/run/pcma.socket")
 
 def run f
   $sock.send MessagePack.pack f
