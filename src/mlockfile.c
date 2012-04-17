@@ -40,7 +40,7 @@ void mlockfile_release(struct mlockfile *f)
         if (munmap(f->mmapped, f->mmappedsize) < 0)
             perror("mlockfile_release munmap");
     }
-    if (f->fd > 0) {
+    if (f->fd > -1) {
         if (close(f->fd) < 0)
             perror("mlockfile_release close");
         LOG_DEBUG("closed fd %i for %s\n", f->fd, f->path);

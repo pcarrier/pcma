@@ -29,16 +29,22 @@ int pcma_send(void *socket,
     zmq_msg_t msg;
 
     msgpack_sbuffer *buffer = msgpack_sbuffer_new();
+
+    if (!buffer) {
+        LOG_ERROR("msgpack_sbuffer_new failed in pcma_send\n");
+        return (-1);
+    }
+
     msgpack_packer *pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
 
-    if (!(buffer && pk)) {
+    if (!pk) {
         LOG_ERROR("msgpack init failed in pcma_send\n");
-        return (-1);
+        return (-2);
     }
 
     if (pack_fn(pk, data) < 0) {
         LOG_ERROR("pack function failed in pcma_send\n");
-        return (-2);
+        return (-3);
     }
 
     msgpack_packer_free(pk);
@@ -48,13 +54,13 @@ int pcma_send(void *socket,
                           zmq_free_helper, buffer) < 0) {
         perror("zmq_msg_init_data");
         LOG_ERROR("pcma_send could not proceed\n");
-        return (-3);
+        return (-4);
     }
 
     if (zmq_send(socket, &msg, 0) < 0) {
         perror("zmq_send");
         LOG_ERROR("pcma_send could not proceed\n");
-        return (-4);
+        return (-5);
     }
 
     if (zmq_msg_close(&msg) < 0) {
