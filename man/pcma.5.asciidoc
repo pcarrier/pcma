@@ -40,50 +40,52 @@ Note that even if the memory will be completely blocked, it will appear as
 
 PROTOCOL
 --------
-As MessagePack is a binary protocol, we use the equivalent JSON for readability.
+Communications between the client and server are based on the request-reply model.
 
-DESIGN
-~~~~~~
-Request-reply model. Both requests and replies are MessagePack arrays.
+Both requests and replies are MessagePack arrays.
+As MessagePack is a binary protocol, we will use the equivalent JSON for readability.
+
+The first item of every request is the command name.
 
 The first item of every reply is a boolean indicating whether the request
-was successful, followed by an optional return.
-If the request failed, a string indicating the error follows by convention.
+was successful, followed by an optional returned object.
+By convention, if the request failed, a string indicating the error follows.
 
 EXAMPLES
 ~~~~~~~~
-* +[\'ping']+ → +[true]+
-* +[\'lock', \'/tmp/foo']+ → +[true, [\'/tmp/foo', 16]]+
-* +[\'lock', \'/tmp/doesnotexist']+ → +[false, \'mlockfile_lock failed']+
-* +[\'list']+ → +[true, [[\'/tmp/foo', 16], [\'/tmp/bar', 1024]]]+
+  ['ping'] → [true]
+  ['lock', '/tmp/foo'] → [true, ['/tmp/foo', 16]]
+  ['lock', '/tmp/doesnotexist'] → [false, 'mlockfile_lock failed']
+  ['list'] → [true, [['/tmp/foo', 16], ['/tmp/bar', 1024]]]
 
 COMMANDS
 ~~~~~~~~
 
 ping
 ^^^^
-* Description: doesn't do anything.
-* Parameters: none
-* Returns: nothing (+[true]+ in case of success, +[false, ...?]+ otherwise).
+Description:: Doesn't do anything.
+Parameters:: None.
+Returns:: Nothing (+[true]+ in case of success, +[false, ...?]+ otherwise).
 
 list
 ^^^^
-* Description: lists all files currently locked.
-* Parameters: none
-* Returns: Array of files locked in memory.
-  Each file is an array +[path, size in bytes]+.
-  We might append extra objects to each file array as we see fit.
+Description:: Lists all files currently locked.
+Parameters:: None.
+Returns:: Array of files locked in memory. Each file is an array +[path, ...]+.
+We might add or remove extra objects to each file array as we see fit.
+Currently, the second field contains the locked size in bytes.
 
 lock
 ^^^^
-* Description: Locks a file in memory.
-  If this file is already locked, it will be re-locked and its new size will
-  be taken into account. The previous lock is kept until completion.
-* Parameters: path of the file
-* Returns: corresponding file object (see +list+).
+Description:: Locks a file in memory.
+If this file is already locked, it will be re-locked and its
+new size will be taken into account.
+The previous lock is kept until completion.
+Parameters:: Path of the file.
+Returns:: Corresponding file object (see +list+).
 
 unlock
 ^^^^^^
-* Description: Unlocks a file.
-* Parameters: path of the file
-* Returns: nothing (see +ping+).
+Description:: Unlocks a file.
+Parameters:: Path of the file.
+Returns:: Nothing (see +ping+).
