@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <msgpack.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,7 +86,7 @@ void help(char *name)
         disp_name = &default_name;
 
     fprintf(stderr,
-            "Usage: %s [-v...] [-e endpoint]\n",
+            "Usage: %s [-t timeout] [-v...] [-e endpoint]\n",
             *disp_name);
     exit(EXIT_LOCAL_FAILURE);
 }
@@ -96,15 +97,23 @@ int main(int argc, char **argv)
     void *ctx = NULL, *socket = NULL;
     char **endpoint = &default_ep;
     struct pcma_req req;
+    zmq_pollitem_t pollitem;
     zmq_msg_t msg;
 
-    while ((opt = getopt(argc, argv, "ve:")) != -1) {
+    while ((opt = getopt(argc, argv, "ve:t:")) != -1) {
         switch(opt) {
         case 'v':
             log_level++;
             break;
         case 'e':
             endpoint = &optarg;
+            break;
+        case 't':
+            timeout = atol(optarg);
+            if (timeout >= LONG_MAX / 1000L) {
+                LOG_ERROR("timeout too high\n");
+                goto err;
+            }
             break;
         default:
             if(argc > 0)
@@ -115,6 +124,9 @@ int main(int argc, char **argv)
     }
 
     LOG_INFO("using endpoint %s\n", *endpoint);
+    if(timeout >= 0) {
+        LOG_INFO("using a %li ms timeout\n", timeout);
+    }
 
     if (!(ctx = zmq_init(1)))
         MAIN_ERR_FAIL("zmq_init");
@@ -135,6 +147,19 @@ int main(int argc, char **argv)
     if (ret < 0) {
         LOG_ERROR("pcma_send failed with %i\n", ret);
         goto err;
+    }
+
+    if (timeout >= 0) {
+        pollitem.socket = socket;
+        pollitem.events = ZMQ_POLLIN;
+
+        ret = zmq_poll(&pollitem, 1, timeout * 1000L);
+        if (ret < 0)
+            MAIN_ERR_FAIL("zmq_poll");
+        if (ret == 0) {
+            LOG_ERROR("timeout after %li ms\n", timeout);
+            goto fastfail;
+        }
     }
 
     if (zmq_msg_init(&msg) < 0)
@@ -168,5 +193,6 @@ int main(int argc, char **argv)
         zmq_close(socket);
     if (ctx)
         zmq_term(ctx);
+  fastfail:
     return (exit_code);
 }

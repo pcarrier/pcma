@@ -10,7 +10,7 @@ pcmac - Page Cache My Assets client
 
 SYNOPSIS
 --------
-*pcmad* [-v...] [-e 'ENDPOINT'] 'REQUEST' ['PARAMETER'...]
+*pcmac* [-v...] [-t 'TIMEOUT'] [-e 'ENDPOINT'] 'REQUEST' ['PARAMETER'...]
 
 
 DESCRIPTION
@@ -26,6 +26,9 @@ OPTIONS
 
 *-e* 'ENDPOINT':
   Specify the endpoint to connect to. Defaults to +ipc:///var/run/pcma.socket+.
+
+*-e* 'TIMEOUT':
+  Specify a timeout in milliseconds. No timeout is applied by default.
 
 
 EXIT STATUS

@@ -5,5 +5,6 @@
 #define EXIT_REMOTE_FAILURE 2
 
 char *default_name = "pcmac";
+long timeout = -1;
 
 #endif /* PCMA__PCMAC_H */
