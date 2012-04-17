@@ -86,7 +86,7 @@ void help(char *name)
         disp_name = &default_name;
 
     fprintf(stderr,
-            "Usage: %s [-t timeout] [-v...] [-e endpoint]\n",
+            "Usage: %s [-t TIMEOUT] [-v...] [-e ENDPOINT] REQUEST [PARAMETER...]\n",
             *disp_name);
     exit(EXIT_LOCAL_FAILURE);
 }

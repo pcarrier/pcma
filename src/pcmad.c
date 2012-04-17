@@ -285,7 +285,7 @@ void help(char *name)
         disp_name = &default_name;
 
     fprintf(stderr,
-            "Usage: %s [-v...] [-e endpoint]\n",
+            "Usage: %s [-v...] [-e ENDPOINT]\n",
             *disp_name);
     exit(EXIT_FAILURE);
 }
