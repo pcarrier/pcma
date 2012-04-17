@@ -15,6 +15,7 @@ PATH=@bindir@:/sbin:/usr/sbin:/bin:/usr/bin
 DESC="Page Cache My Assets daemon"
 NAME=pcmad
 CLIENT_NAME=pcmac
+CLIENT_TIMEOUT=1000
 DAEMON=@bindir@/$NAME
 DAEMON_ARGS="-vv"
 PIDFILE=/var/run/$NAME.pid
@@ -36,7 +37,7 @@ do_start()
 {
 	start-stop-daemon --start --quiet --background --make-pidfile --pidfile $PIDFILE \
 		--exec $DAEMON -- $DAEMON_ARGS || return 2
-	@bindir@/pcmac ping || return 2
+	@bindir@/pcmac -t 1000 ping || return 2
 }
 
 do_stop()
