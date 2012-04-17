@@ -5,7 +5,7 @@
 #include <zmq.h>
 #include "common.h"
 #include "mlockfile.h"
-#include "pcmad.h"
+#include "daemon.h"
 
 void mlockfile_pack(msgpack_packer * pk, struct mlockfile *lf)
 {

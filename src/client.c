@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <zmq.h>
 #include "common.h"
-#include "pcmac.h"
+#include "client.h"
 
 struct pcma_req {
     int argc;
