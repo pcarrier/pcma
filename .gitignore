@@ -10,6 +10,8 @@ src/pcmad
 init/pcmad.lsb
 init/pcmad.service
 init/pcmad.upstart
+config.h
+config.h.in
 .deps/
 *.cache/
 *~
