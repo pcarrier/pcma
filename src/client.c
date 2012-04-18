@@ -159,8 +159,10 @@ int main(int argc, char **argv)
         if (ret < 0)
             MAIN_ERR_FAIL("zmq_poll");
         if (ret == 0) {
+            int zero = 0;
             LOG_ERROR("timeout after %li ms\n", timeout);
-            goto fastfail;
+            zmq_setsockopt(socket, ZMQ_LINGER, &zero, sizeof(zero));
+            goto err;
         }
     }
 
@@ -195,6 +197,5 @@ int main(int argc, char **argv)
         zmq_close(socket);
     if (ctx)
         zmq_term(ctx);
-  fastfail:
     return (exit_code);
 }
