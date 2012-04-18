@@ -1,12 +1,10 @@
 #!/usr/bin/env ruby
 
 begin; require 'rubygems'; rescue; end
-
 %w[zmq msgpack].each {|m| require m}
 
-ctx = ZMQ::Context.new(1)
-
-$sock = ctx.socket(ZMQ::REQ)
+$ctx = ZMQ::Context.new(1)
+$sock = $ctx.socket(ZMQ::REQ)
 $sock.connect("ipc:///var/run/pcma.socket")
 
 def run f
@@ -40,3 +38,6 @@ run %w[unlock /bin/echo]
 run %w[list]
 run %w[unlock /bin/cat]
 run %w[list]
+
+$sock.close
+$ctx.close
