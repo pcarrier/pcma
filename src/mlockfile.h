@@ -16,10 +16,10 @@ struct mlockfile_list {
 int mlockfile_lock(struct mlockfile *f);
 void mlockfile_release(struct mlockfile *f);
 
-struct mlockfile *mlockfile_init(char *path);
+struct mlockfile *mlockfile_init(const char *path);
 size_t mfl_length(struct mlockfile_list *list);
 int mfl_add(struct mlockfile_list **l,struct mlockfile *f);
 int mfl_remove(struct mlockfile_list **list,struct mlockfile_list *entry);
-struct mlockfile_list *mfl_find_path(struct mlockfile_list *head, char *path);
+struct mlockfile_list *mfl_find_path(struct mlockfile_list *head, const char *path);
 
 #endif /* PCMA__MLOCKFILE_H */

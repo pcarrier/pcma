@@ -4,7 +4,7 @@
 #include "macros.h"
 
 int log_level;
-char *default_ep = "ipc:///var/run/pcma.socket";
+const char *default_ep = "ipc:///var/run/pcma.socket";
 
 char *raw_to_string(msgpack_object_raw * raw)
 {

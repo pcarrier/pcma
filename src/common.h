@@ -6,7 +6,7 @@
 #include "macros.h"
 
 extern int log_level;
-extern char *default_ep;
+extern const char *default_ep;
 
 char *raw_to_string(msgpack_object_raw * raw);
 void zmq_free_helper(void *data, void *hint);

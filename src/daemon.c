@@ -71,7 +71,7 @@ void handle_list_request(void *socket)
         LOG_ERROR("handle_list_request: pcma_send failed with %i\n", ret);
 }
 
-void handle_lock_request(void *socket, char *path)
+void handle_lock_request(void *socket, const char *path)
 {
     int ret;
     struct mlockfile *f;
@@ -111,7 +111,7 @@ void handle_lock_request(void *socket, char *path)
     }
 }
 
-void handle_unlock_request(void *socket, char *path)
+void handle_unlock_request(void *socket, const char *path)
 {
     int ret;
     struct mlockfile_list *e = mfl_find_path(mfl, path);
@@ -147,7 +147,9 @@ void handle_unlock_request(void *socket, char *path)
 int handle_req(void *socket, zmq_msg_t * msg)
 {
     int command_id;
-    char *query, *path = NULL;
+    char *query;
+    char *path = NULL;
+ 
     msgpack_object obj;
     msgpack_unpacked pack;
 
@@ -167,7 +169,7 @@ int handle_req(void *socket, zmq_msg_t * msg)
         return (-2);
     }
 
-    char *command = (char *) obj.via.array.ptr[0].via.raw.ptr;
+    const char *command = (const char *) obj.via.array.ptr[0].via.raw.ptr;
     int command_size = obj.via.array.ptr[0].via.raw.size;
     if (!command) {
         LOG_ERROR("handle_req: no command\n");
@@ -273,13 +275,13 @@ int loop(void *socket)
     return (-42);               /* Yiipee! */
 }
 
-void help(char *name)
+void help(const char *name)
 {
-    char **disp_name = &name;
+    const char *disp_name = name;
     if (!disp_name)
-        disp_name = &default_name;
+        disp_name = default_name;
 
-    fprintf(stderr, "Usage: %s [-v...] [-e ENDPOINT]\n", *disp_name);
+    fprintf(stderr, "Usage: %s [-v...] [-e ENDPOINT]\n", disp_name);
     exit(EXIT_FAILURE);
 }
 
@@ -287,7 +289,7 @@ int main(int argc, char **argv)
 {
     int ret, opt;
     void *ctx = NULL, *socket = NULL;
-    char **endpoint = &default_ep;
+    const char *endpoint = default_ep;
 
     while ((opt = getopt(argc, argv, "ve:")) != -1) {
         switch (opt) {
@@ -295,7 +297,7 @@ int main(int argc, char **argv)
             log_level++;
             break;
         case 'e':
-            endpoint = &optarg;
+            endpoint = optarg;
             break;
         default:
             if (argc > 0)
@@ -305,13 +307,13 @@ int main(int argc, char **argv)
         }
     }
 
-    LOG_INFO("using endpoint %s\n", *endpoint);
+    LOG_INFO("using endpoint %s\n", endpoint);
 
     if (!(ctx = zmq_init(1)))
         MAIN_ERR_FAIL("zmq_init");
     if (!(socket = zmq_socket(ctx, ZMQ_REP)))
         MAIN_ERR_FAIL("zmq_socket");
-    if (zmq_bind(socket, *endpoint) < 0)
+    if (zmq_bind(socket, endpoint) < 0)
         MAIN_ERR_FAIL("zmq_bind");
 
     ret = loop(socket);

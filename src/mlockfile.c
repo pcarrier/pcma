@@ -7,7 +7,7 @@
 #include "common.h"
 #include "mlockfile.h"
 
-struct mlockfile *mlockfile_init(char *path)
+struct mlockfile *mlockfile_init(const char *path)
 {
     struct mlockfile *f = malloc(sizeof(struct mlockfile));
     if (!f) {
@@ -110,7 +110,7 @@ size_t mfl_length(struct mlockfile_list * list)
 }
 
 struct mlockfile_list *mfl_find_path(struct mlockfile_list *head,
-                                     char *path)
+                                     const char *path)
 {
     struct mlockfile_list *itr = head;
     while (itr != NULL) {

@@ -16,8 +16,8 @@ struct pcma_req {
 int pcma_req_packfn(msgpack_packer * pk, void *req)
 {
     int i, len;
-    char *str;
-    struct pcma_req *rreq = (struct pcma_req *) req;
+    const char *str;
+    const struct pcma_req *rreq = (struct pcma_req *) req;
 
     msgpack_pack_array(pk, (rreq->argc));
     for (i = 0; i < rreq->argc; i++) {
@@ -81,15 +81,15 @@ int handle_rep(zmq_msg_t * msg)
     return (0);
 }
 
-void help(char *name)
+void help(const char *name)
 {
-    char **disp_name = &name;
+    const char *disp_name = name;
     if (!disp_name)
-        disp_name = &default_name;
+        disp_name = default_name;
 
     fprintf(stderr,
             "Usage: %s [-t TIMEOUT] [-v...] [-e ENDPOINT] REQUEST [PARAMETER...]\n",
-            *disp_name);
+            disp_name);
     exit(EXIT_LOCAL_FAILURE);
 }
 
@@ -97,7 +97,7 @@ int main(int argc, char **argv)
 {
     int ret, opt, exit_code = EXIT_LOCAL_FAILURE;
     void *ctx = NULL, *socket = NULL;
-    char **endpoint = &default_ep;
+    const char *endpoint = default_ep;
     struct pcma_req req;
     zmq_pollitem_t pollitem;
     zmq_msg_t msg;
@@ -107,13 +107,16 @@ int main(int argc, char **argv)
     if (argc < 2)
         help(argv[0]);
 
+    if (argc < 2)
+        help(argv[0]);
+
     while ((opt = getopt(argc, argv, "ve:t:")) != -1) {
         switch (opt) {
         case 'v':
             log_level++;
             break;
         case 'e':
-            endpoint = &optarg;
+            endpoint = optarg;
             break;
         case 't':
             timeout = atol(optarg);
@@ -127,7 +130,7 @@ int main(int argc, char **argv)
         }
     }
 
-    LOG_INFO("using endpoint %s\n", *endpoint);
+    LOG_INFO("using endpoint %s\n", endpoint);
     if (timeout >= 0) {
         LOG_INFO("using a %li ms timeout\n", timeout);
     }
@@ -136,7 +139,7 @@ int main(int argc, char **argv)
         MAIN_ERR_FAIL("zmq_init");
     if (!(socket = zmq_socket(ctx, ZMQ_REQ)))
         MAIN_ERR_FAIL("zmq_socket");
-    if (zmq_connect(socket, *endpoint) < 0)
+    if (zmq_connect(socket, endpoint) < 0)
         MAIN_ERR_FAIL("zmq_connect");
 
     if (optind >= argc) {
