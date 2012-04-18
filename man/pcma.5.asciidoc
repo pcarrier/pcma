@@ -89,3 +89,9 @@ unlock
 Description:: Unlocks a file.
 Parameters:: Path of the file.
 Returns:: Nothing (see +ping+).
+
+SEE ALSO
+--------
+
+https://github.com/spotify/pcma/[Our repository] contains man pages in `man/`,
+our roadmap in `ROADMAP.asciidoc`, a list of our most significant contributors in `AUTHORS`.
