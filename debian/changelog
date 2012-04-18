@@ -1,5 +1,5 @@
-pcma (0.0.1) UNRELEASED; urgency=low
+pcma (0.1.0) unstable; urgency=low
 
   * Initial upstream release.
 
- -- Pierre Carrier <pierre@spotify.com>  Mon, 16 Apr 2012 17:07:22 +0200
+ -- Pierre Carrier <pierre@spotify.com>  Wed, 18 Apr 2012 15:34:17 +0200

@@ -2,9 +2,14 @@ Source: pcma
 Priority: extra
 Maintainer: Pierre Carrier <pierre@spotify.com>
 Section: utils
-Build-depends: debhelper (>= 7.0.50), autoconf, libmsgpack-dev, libzmq-dev, asciidoc
+Build-depends:
+  debhelper (>= 7.0.50),
+  autoconf,
+  pkg-config,
+  libmsgpack-dev,
+  libzmq-dev,
+  asciidoc
 Standards-Version: 3.9.3.1
-X-Python-Version: >= 2.6
 
 Package: pcma
 Architecture: any
@@ -12,6 +17,6 @@ Depends:
  ${shlibs:Depends},
  ${misc:Depends},
  libmsgpack3,
- libzmq1,
+ libzmq1
 Description: Page Cache My Assets
  pcma is a client/server infrastucture to (un)locks files in memory.
