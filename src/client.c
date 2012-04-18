@@ -102,6 +102,11 @@ int main(int argc, char **argv)
     zmq_pollitem_t pollitem;
     zmq_msg_t msg;
 
+    if (argc < 1)
+        help(NULL);
+    if (argc < 2)
+        help(argv[0]);
+
     while ((opt = getopt(argc, argv, "ve:t:")) != -1) {
         switch (opt) {
         case 'v':
@@ -118,10 +123,7 @@ int main(int argc, char **argv)
             }
             break;
         default:
-            if (argc > 0)
-                help(argv[0]);
-            else
-                help(NULL);
+            help(argv[0]);
         }
     }
 
