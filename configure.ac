@@ -3,17 +3,20 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_PROG_SED
 AC_HEADER_STDC
-AC_CHECK_PROGS(A2X, a2x, a2x, false)
+AC_CHECK_PROGS(A2X, a2x, "no")
+AC_CHECK_PROGS(XMLLINT, xmllint, "no")
+AC_CHECK_PROGS(XSLTPROC, xsltproc, "no")
+
+if test "x$A2X"     = xno; then AC_MSG_ERROR([a2x is required]); fi
+if test "x$XMLLINT" = xno; then AC_MSG_ERROR([xmllint is required]); fi
+if test "x$XSLPROC" = xno; then AC_MSG_ERROR([xsltproc is required]); fi
+
 AC_CHECK_PROGS(ASCIIDOC, asciidoc)
 AC_CHECK_PROGS(XMLLINT, xmllint)
 AC_CHECK_PROGS(XSLTPROC, xsltproc)
 AC_CHECK_LIB(msgpack,msgpack_version)
 PKG_PROG_PKG_CONFIG
 PKG_CHECK_MODULES([ZMQ], [libzmq >= 2.1])
-
-if test "z$A2X" = 'zfalse'; then
-	AC_MSG_ERROR([Build requires a2x])
-fi
 
 AM_PROG_CC_C_O
 

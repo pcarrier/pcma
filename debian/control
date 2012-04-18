@@ -8,7 +8,8 @@ Build-depends:
   pkg-config,
   libmsgpack-dev,
   libzmq-dev,
-  asciidoc
+  asciidoc,
+  xsltproc
 Standards-Version: 3.9.3.1
 
 Package: pcma
