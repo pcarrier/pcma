@@ -13,7 +13,7 @@ the page cache and avoid page cache eviction.
 
 IMPLEMENTATION
 --------------
-- Protocol based on ØMQ and MessagePack
+- Protocol based on ØMQ and MessagePack.
 - Single-threaded C server. See +pcmad(1)+.
 - Single-threaded, single request C client. See +pcmac(1)+.
 - Trivial test client providing an example Ruby implementation, +test/suite.rb+.
