@@ -2,7 +2,7 @@ Source: pcma
 Priority: extra
 Maintainer: Pierre Carrier <pierre@spotify.com>
 Section: utils
-Build-depends: debhelper (>= 7.0.50), autoconf, libmsgpack-dev, libzmq-dev
+Build-depends: debhelper (>= 7.0.50), autoconf, libmsgpack-dev, libzmq-dev, asciidoc
 Standards-Version: 3.9.3.1
 X-Python-Version: >= 2.6
 

@@ -6,7 +6,11 @@ AC_PROG_SED
 AM_PROG_CC_C_O
 PKG_PROG_PKG_CONFIG
 
-AC_CHECK_PROGS(A2X, a2x)
+AC_CHECK_PROG(A2X, a2x, a2x, false)
+
+if test "z$A2X" = 'zfalse'; then
+	AC_MSG_ERROR([Build requires a2x])
+fi
 
 dnl Needed by a2x
 AC_CHECK_PROGS(ASCIIDOC, asciidoc)
