@@ -24,7 +24,7 @@ IMPLEMENTATION
 WARNING
 -------
 If you do not fully understand the implications of locking pages in your
-operating system's virtual memory, please don't.
+operating system's virtual memory, please don't use this project.
 
 I will not be held responsible for your poor memory management decisions.
 +pcma(5)+ is a dangerous tool, you could hurt your systems badly.
