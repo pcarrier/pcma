@@ -5,6 +5,7 @@ v0.2.0
 ------
 
 [compact]
+* glib dependency
 * Tags
 ** When locking a file, tags can be specified
    and are added to the tags for the file
@@ -22,13 +23,19 @@ v0.3.0
 ------
 
 [compact]
-* Last (re)locking timestamp and file descriptor in file arrays
-* Recursive locking of directories
-* Parseable output for the client (under reasonable assumptions for paths)
+* Configuration
+** Use a system-wide .desktop file to specify verbosity and endpoints
+** Remove '-vv' in init scripts
+** Support for multiple endpoints
+* Multithreading
+* Add (re)locking timestamp and file descriptor in file arrays
+* New commands
+** Recursive locking of directories
+** Background operations
 
 Under consideration
 -------------------
 
 [compact]
-* Multithreading
 * `inotify` support to remap growing files
+* Parseable output for the embedded client (under reasonable assumptions for paths)
