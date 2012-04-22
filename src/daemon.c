@@ -252,6 +252,9 @@ int loop(void *socket)
     zmq_msg_t msg;
 
     for (;;) {
+        if (should_exit)
+            return(0);
+
         if (zmq_msg_init(&msg) < 0) {
             perror("zmq_msg_init");
             continue;

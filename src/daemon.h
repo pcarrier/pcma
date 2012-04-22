@@ -3,5 +3,6 @@
 
 struct mlockfile_list *mfl = NULL;
 const char *default_name = "pcmad";
+int should_exit = 0;
 
 #endif /* PCMA__DAEMON_H */
