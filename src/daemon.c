@@ -1,12 +1,13 @@
-#include <signal.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <glib.h>
 #include <msgpack.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <zmq.h>
 #include "common.h"
-#include "mlockfile.h"
 #include "daemon.h"
+#include "mlockfile.h"
 
 void mlockfile_pack(msgpack_packer * pk, struct mlockfile *lf)
 {
