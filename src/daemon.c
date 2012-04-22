@@ -290,7 +290,7 @@ void help(const char *name)
     if (!disp_name)
         disp_name = default_name;
 
-    fprintf(stderr, "Usage: %s [-v...] [-e ENDPOINT]\n", disp_name);
+    fprintf(stderr, "Usage: %s [-e ENDPOINT]\n", disp_name);
     exit(EXIT_FAILURE);
 }
 
@@ -385,9 +385,6 @@ int main(int argc, char **argv)
 
     while ((opt = getopt(argc, argv, "ve:")) != -1) {
         switch (opt) {
-        case 'v':
-            log_level++;
-            break;
         case 'e':
             endpoint = optarg;
             break;

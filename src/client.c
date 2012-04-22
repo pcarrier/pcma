@@ -88,7 +88,7 @@ void help(const char *name)
         disp_name = default_name;
 
     fprintf(stderr,
-            "Usage: %s [-t TIMEOUT] [-v...] [-e ENDPOINT] REQUEST [PARAMETER...]\n",
+            "Usage: %s [-t TIMEOUT] [-e ENDPOINT] REQUEST [PARAMETER...]\n",
             disp_name);
     exit(EXIT_LOCAL_FAILURE);
 }
@@ -112,9 +112,6 @@ int main(int argc, char **argv)
 
     while ((opt = getopt(argc, argv, "ve:t:")) != -1) {
         switch (opt) {
-        case 'v':
-            log_level++;
-            break;
         case 'e':
             endpoint = optarg;
             break;

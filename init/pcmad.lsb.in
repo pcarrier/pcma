@@ -17,7 +17,6 @@ NAME=pcmad
 CLIENT_NAME=pcmac
 CLIENT_TIMEOUT=1000
 DAEMON=@bindir@/$NAME
-DAEMON_ARGS="-vv"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 

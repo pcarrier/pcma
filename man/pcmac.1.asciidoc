@@ -10,7 +10,7 @@ pcmac - Page Cache My Assets client
 
 SYNOPSIS
 --------
-*pcmac* [-v...] [-t 'TIMEOUT'] [-e 'ENDPOINT'] 'REQUEST' ['PARAMETER'...]
+*pcmac* [-t 'TIMEOUT'] [-e 'ENDPOINT'] 'REQUEST' ['PARAMETER'...]
 
 
 DESCRIPTION
@@ -21,9 +21,6 @@ if any and exits accordingly. Requests are documented in +pcma(5)+.
 
 OPTIONS
 -------
-*-v*:
-  Increase the verbosity. Useful up to 3 times. At least one occurence is recommended.
-
 *-e* 'ENDPOINT':
   Specify the endpoint to connect to. Defaults to +ipc:///var/run/pcma.socket+.
 
