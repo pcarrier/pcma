@@ -84,7 +84,7 @@ int mlockfile_lock(struct mlockfile *f)
     }
 
     if (f->mmapped) {
-        LOG_INFO("relocked %s (%liB->%liB)\n",
+        LOG_INFO("relocked %s (%li -> %li bytes)\n",
                  f->path, (long) f->mmappedsize, (long) stats.st_size);
         if (munlock(f->mmapped, f->mmappedsize) < 0)
             perror("mlockfile_lock munlock");
