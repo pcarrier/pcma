@@ -21,5 +21,6 @@ size_t mfl_length(struct mlockfile_list *list);
 int mfl_add(struct mlockfile_list **l,struct mlockfile *f);
 int mfl_remove(struct mlockfile_list **list,struct mlockfile_list *entry);
 struct mlockfile_list *mfl_find_path(struct mlockfile_list *head, const char *path);
+int mfl_print(struct mlockfile_list **l);
 
 #endif /* PCMA__MLOCKFILE_H */

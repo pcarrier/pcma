@@ -154,3 +154,34 @@ int mfl_remove(struct mlockfile_list **list, struct mlockfile_list *entry)
     free(itr);
     return (0);
 }
+
+int mfl_print(struct mlockfile_list **list)
+{
+    int ret;
+    struct mlockfile_list *itr;
+    struct mlockfile *f;
+    const char *printf_perror = "mlf_print printf";
+
+    ret = printf("List of files: ---\n");
+    if (ret < 0) {
+        perror(printf_perror);
+        return(-1);
+    }
+
+    for (itr = *list; itr != NULL; itr = itr->next) {
+        f = itr->file;
+        ret = printf("%s (fd %i, %li bytes)\n", f->path, f->fd, f->mmappedsize);
+        if (ret < 0) {
+            perror(printf_perror);
+            return(-2);
+        }
+    }
+
+    ret = printf("--- end of list ---\n");
+    if (ret < 0) {
+        perror(printf_perror);
+        return(-3);
+    }
+
+    return 0;
+}
