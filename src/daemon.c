@@ -303,6 +303,15 @@ void sh_termination(int signum)
     }
 }
 
+void sh_abrt(int signum)
+{
+    LOG_INFO("SIGABRT received\n");
+    mfl_print(&mfl);
+    if (pcmad_ctx)
+        zmq_term(pcmad_ctx);
+    exit(-1);
+}
+
 void sh_usr1(int signum)
 {
     LOG_INFO("SIGUSR1 received\n");
@@ -361,6 +370,11 @@ int setup_signals()
         LOG_ERROR("setup_sig SIGUSR1 returned %i\n", ret);
         return(-4);
     }
+    ret = setup_sig(SIGABRT, sh_abrt, 0);
+    if (ret < 0) {
+        LOG_ERROR("setup_sig SIGABRT returned %i\n", ret);
+        return(-5);
+    }
 }
 
 int main(int argc, char **argv)
@@ -385,13 +399,11 @@ int main(int argc, char **argv)
         }
     }
 
-    LOG_INFO("using endpoint %s\n", endpoint);
+    g_message("using endpoint %s", endpoint);
 
     ret = setup_signals();
-    if (ret < 0) {
-        LOG_ERROR("setup_signals returned %i\n", ret);
-        goto err;
-    }
+    if (ret < 0)
+        g_error("setup_signals returned %i", ret);
 
     if (!(pcmad_ctx = zmq_init(1)))
         MAIN_ERR_FAIL("zmq_init");
