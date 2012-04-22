@@ -3,12 +3,16 @@
 
 #define LOG_SERV(...) \
 	fprintf(stderr, "[SERVER] " __VA_ARGS__);
+
+#define LOGGING_DEBUG (log_level > 2)
+#define LOGGING_INFO (log_level > 1)
+#define LOGGING_ERROR (log_level > 0)
 #define LOG_DEBUG(...) \
-	{if (log_level > 2) fprintf(stderr, "[DEBUG] " __VA_ARGS__);}
+	{if (LOGGING_DEBUG) fprintf(stderr, "[DEBUG] " __VA_ARGS__);}
 #define LOG_INFO(...) \
-	{if (log_level > 1) fprintf(stderr, "[INFO] " __VA_ARGS__);}
+	{if (LOGGING_INFO) fprintf(stderr, "[INFO] " __VA_ARGS__);}
 #define LOG_ERROR(...) \
-	{if (log_level > 0) fprintf(stderr, "[ERROR] " __VA_ARGS__);}
+	{if (LOGGING_ERROR) fprintf(stderr, "[ERROR] " __VA_ARGS__);}
 
 #define MAIN_ERR_FAIL(str) {perror(str); goto err;}
 
