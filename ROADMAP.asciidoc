@@ -12,7 +12,7 @@ v0.2.0
 ** When unlocking a tag, for all files:
 *** If this tag and only this tag, unlock
 *** If this tag and more, remove the tag
-* Signal handlers
+* *DONE* Signal handlers
 ** List locked files
 *** on SIGUSR1
 *** on INT/QUIT/TERM with -vv
