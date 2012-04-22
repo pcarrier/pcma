@@ -1,3 +1,4 @@
+#include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <msgpack.h>
@@ -261,8 +262,12 @@ int loop(void *socket)
         }
 
         if (zmq_recv(socket, &msg, 0) < 0) {
-            perror("zmq_recv");
-            return (-1);
+            if (errno == EINTR) {
+                continue;
+            } else {
+                perror("zmq_recv");
+                return (-1);
+            }
         }
 
         ret = handle_req(socket, &msg);
@@ -288,6 +293,75 @@ void help(const char *name)
     exit(EXIT_FAILURE);
 }
 
+void sh_termination(int signum)
+{
+    should_exit = 1;
+    LOG_INFO("Signal %i received\n", signum);
+    if (LOGGING_DEBUG) {
+        mfl_print(&mfl);
+    }
+}
+
+void sh_usr1(int signum)
+{
+    LOG_INFO("SIGUSR1 received\n");
+    mfl_print(&mfl);
+}
+
+int setup_sig(int signum, void (*sh)(int), int keep_ignoring)
+{
+    int ret;
+    struct sigaction new, old;
+
+    sigemptyset (&new.sa_mask);
+    new.sa_flags = 0;
+    new.sa_handler = sh;
+
+    ret = sigaction (signum, NULL, &old);
+    if (ret < 0) {
+        perror("sigaction(old)");
+        return(-1);
+    }
+
+    if (keep_ignoring && old.sa_handler == SIG_IGN) {
+        LOG_DEBUG("ignoring signal %i\n", signum);
+    } else {
+        ret = sigaction (signum, &new, NULL);
+        if (ret < 0) {
+            perror("sigaction(new)");
+            return(-2);
+        }
+    }
+
+    return(0);
+}
+
+int setup_signals()
+{
+    int ret;
+
+    ret = setup_sig(SIGTERM, sh_termination, 1);
+    if (ret < 0) {
+        LOG_ERROR("setup_sig SIGTERM returned %i\n", ret);
+        return(-1);
+    }
+    ret = setup_sig(SIGINT, sh_termination, 1);
+    if (ret < 0) {
+        LOG_ERROR("setup_sig SIGINT returned %i\n", ret);
+        return(-2);
+    }
+    ret = setup_sig(SIGQUIT, sh_termination, 1);
+    if (ret < 0) {
+        LOG_ERROR("setup_sig SIGQUIT returned %i\n", ret);
+        return(-3);
+    }
+    ret = setup_sig(SIGUSR1, sh_usr1, 0);
+    if (ret < 0) {
+        LOG_ERROR("setup_sig SIGUSR1 returned %i\n", ret);
+        return(-4);
+    }
+}
+
 int main(int argc, char **argv)
 {
     int ret, opt;
@@ -311,6 +385,12 @@ int main(int argc, char **argv)
     }
 
     LOG_INFO("using endpoint %s\n", endpoint);
+
+    ret = setup_signals();
+    if (ret < 0) {
+        LOG_ERROR("setup_signals returned %i\n", ret);
+        goto err;
+    }
 
     if (!(ctx = zmq_init(1)))
         MAIN_ERR_FAIL("zmq_init");
