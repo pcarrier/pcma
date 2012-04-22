@@ -14,8 +14,11 @@ if test "x$XSLPROC" = xno; then AC_MSG_ERROR([xsltproc is required]); fi
 AC_CHECK_PROGS(ASCIIDOC, asciidoc)
 AC_CHECK_PROGS(XMLLINT, xmllint)
 AC_CHECK_PROGS(XSLTPROC, xsltproc)
-AC_CHECK_LIB(msgpack,msgpack_version)
+
+AC_CHECK_LIB([msgpack],[msgpack_version],[])
+
 PKG_PROG_PKG_CONFIG
+PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.16])
 PKG_CHECK_MODULES([ZMQ], [libzmq >= 2.1])
 
 AM_PROG_CC_C_O

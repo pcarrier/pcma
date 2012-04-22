@@ -1,3 +1,6 @@
+INCLUDES = $(GLIB_CFLAGS) $(ZMQ_CFLAGS)
+LIBS = $(GLIB_LIBS) $(ZMQ_LIBS) -lmsgpack
+
 bin_PROGRAMS = pcmad pcmac
 
 pcmac_SOURCES = common.c client.c
