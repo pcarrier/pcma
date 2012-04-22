@@ -27,7 +27,7 @@ OPTIONS
 *-e* 'ENDPOINT':
   Specify the endpoint to connect to. Defaults to +ipc:///var/run/pcma.socket+.
 
-*-e* 'TIMEOUT':
+*-t* 'TIMEOUT':
   Specify a timeout in milliseconds. No timeout is applied by default.
 
 
