@@ -1,29 +1,101 @@
 #include <glib.h>
+#include <glib/gprintf.h>
 #include <msgpack.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <zmq.h>
 #include "common.h"
 #include "daemon.h"
 #include "mlockfile.h"
 
-void mlockfile_pack(msgpack_packer * pk, struct mlockfile *lf)
+void lockfile_print_tag(gpointer data, gpointer user_data)
 {
-    size_t path_length = strlen(lf->path);
-    msgpack_pack_array(pk, 2);
-    msgpack_pack_raw(pk, path_length);
-    msgpack_pack_raw_body(pk, lf->path, path_length);
-    msgpack_pack_uint64(pk, lf->mmappedsize);
+    int ret;
+    const gchar *tag = (const gchar *)data;
+    if ((ret =g_printf("%s ", tag)) < 0) {
+        g_critical ("lockfile_print_tag: g_printf: %s", strerror(errno));
+    }
 }
 
-int mlockfile_packfn(msgpack_packer * pk, void *file)
+
+void lockfile_print(gpointer key, gpointer value, gpointer user_data)
+{
+    const gchar *errmsg = "lockfile_print: g_printf: %s";
+    const gchar *name = (const gchar *)key;
+    struct mlockfile *f = (struct lockfile *)value;
+
+    if (g_printf("%s, %li bytes, fd: %i, tags: ", name, f->fd, f->mmappedsize) < 0) {
+        g_critical(errmsg, strerror(errno));
+    }
+
+    g_list_foreach(f->tags, lockfile_print_tag, NULL);
+
+    if (g_printf("\n") < 0) {
+        g_critical(errmsg, strerror(errno));
+    }
+}
+
+void lockfiles_print(GHashTable *lockfiles)
+{
+    const gchar *errmsg = "lockfiles_print: g_printf: %s";
+
+    if (g_printf("Locked files: ---\n") < 0) {
+        g_critical(errmsg, strerror(errno));
+        return(-1);
+    }
+
+    g_hash_table_foreach (lockfiles, lockfile_print, NULL);
+
+    if (g_printf("--- end of list ---\n") < 0) {
+        g_critical(errmsg, strerror(errno));
+        return(-2);
+    }
+
+    return 0;
+}
+
+void tag_pack(gpointer data, gpointer user_data)
+{
+    msgpack_packer * pk = (msgpack_packer *) user_data;
+    const gchar *tag = (const gchar *)data;
+    size_t taglen = strlen(tag);
+    msgpack_pack_raw(pk, taglen);
+    msgpack_pack_raw_body(pk, tag, taglen);
+}
+
+void mlockfile_pack(msgpack_packer * pk, struct mlockfile *f)
+{
+    msgpack_pack_array(pk, 3);
+    msgpack_pack_uint64(pk, f->fd);
+    msgpack_pack_uint64(pk, f->mmappedsize);
+    msgpack_pack_array(pk, g_list_length(f->tags));
+    g_list_foreach(f->tags, tag_pack, pk);
+}
+
+int mlockfile_packfn(msgpack_packer * pk, void *lockfile)
 {
     msgpack_pack_array(pk, 2);
     msgpack_pack_true(pk);
 
     mlockfile_pack(pk, file);
+    return (0);
+}
+
+int mfl_packfn(msgpack_packer * pk, void *mfl)
+{
+    struct mlockfile_list *itr = mfl;
+
+    msgpack_pack_array(pk, 2);
+    msgpack_pack_true(pk);
+
+    msgpack_pack_array(pk, mfl_length(mfl));
+    while (itr != NULL) {
+        mlockfile_pack(pk, itr->file);
+        itr = itr->next;
+    }
     return (0);
 }
 
@@ -46,21 +118,6 @@ int empty_ok_packfn(msgpack_packer * pk, void *ignored)
     return (0);
 }
 
-int mfl_packfn(msgpack_packer * pk, void *mfl)
-{
-    struct mlockfile_list *itr = mfl;
-
-    msgpack_pack_array(pk, 2);
-    msgpack_pack_true(pk);
-
-    msgpack_pack_array(pk, mfl_length(mfl));
-    while (itr != NULL) {
-        mlockfile_pack(pk, itr->file);
-        itr = itr->next;
-    }
-    return (0);
-}
-
 void handle_ping_request(void *socket)
 {
     pcma_send(socket, empty_ok_packfn, NULL);
@@ -70,7 +127,7 @@ void handle_list_request(void *socket)
 {
     int ret = pcma_send(socket, mfl_packfn, mfl);
     if (ret < 0)
-        LOG_ERROR("handle_list_request: pcma_send failed with %i\n", ret);
+        g_critical("handle_list_request: pcma_send: %i", ret);
 }
 
 void handle_lock_request(void *socket, const char *path)
@@ -80,24 +137,22 @@ void handle_lock_request(void *socket, const char *path)
     struct mlockfile_list *e = mfl_find_path(mfl, path);
 
     if (e) {
-        LOG_DEBUG("handle_lock_request found %s\n", path);
+        g_debug("handle_lock_request found %s", path);
         f = e->file;
     } else if (!(f = mlockfile_init(path))) {
-        LOG_ERROR("mlockfile_init failed\n");
+        g_critical("mlockfile_init failed");
         pcma_send(socket, failed_packfn, "mlockfile_init failed");
     }
 
     ret = mlockfile_lock(f);
     if (ret < 0) {
-        LOG_ERROR("mlockfile_lock failed with %i\n", ret);
+        g_critical("mlockfile_lock: %i", ret);
         pcma_send(socket, failed_packfn, "mlockfile_lock failed");
 
         if (e) {
             ret = mfl_remove(&mfl, e);
             if (ret < 0)
-                LOG_ERROR
-                    ("handle_lock_request mfl_remove failed with %i\n",
-                     ret);
+                g_critical("handle_lock_request: mfl_remove: %i", ret);
         } else {
             mlockfile_release(f);
         }
@@ -106,11 +161,12 @@ void handle_lock_request(void *socket, const char *path)
 
     ret = pcma_send(socket, mlockfile_packfn, f);
     if (ret < 0)
-        LOG_ERROR("handle_lock_request: pcma_send failed with %i\n", ret);
+        g_critical("handle_lock_request: pcma_send: %i", ret);
 
     if (!e) {
         mfl_add(&mfl, f);
     }
+    g_info("locked %s", path);
 }
 
 void handle_unlock_request(void *socket, const char *path)
@@ -119,17 +175,18 @@ void handle_unlock_request(void *socket, const char *path)
     struct mlockfile_list *e = mfl_find_path(mfl, path);
 
     if (!e) {
-        LOG_ERROR("handle_lock_request could not find %s\n", path);
+        g_warning("handle_lock_request could not find %s", path);
         pcma_send(socket, failed_packfn, "not found");
         return;
     }
 
     ret = mfl_remove(&mfl, e);
     if (ret < 0) {
-        LOG_ERROR("handle_unlock_request mfl_removed failed with %i", ret);
+        g_critical("handle_unlock_request: mfl_removed: %i", ret);
         pcma_send(socket, failed_packfn, "could not remove");
     } else {
         pcma_send(socket, empty_ok_packfn, NULL);
+        g_info("unlocked %s", path);
     }
 }
 
@@ -146,6 +203,11 @@ void handle_unlock_request(void *socket, const char *path)
 #define UNLOCK_COMMAND "unlock"
 #define UNLOCK_COMMAND_SIZE 6
 
+void announce_failure(void *socket, char *msg) {
+    g_warning("handle_req: %s", msg);
+    pcma_send(socket, failed_packfn, msg);
+}
+
 int handle_req(void *socket, zmq_msg_t * msg)
 {
     int command_id;
@@ -159,23 +221,21 @@ int handle_req(void *socket, zmq_msg_t * msg)
 
     if (!msgpack_unpack_next
         (&pack, zmq_msg_data(msg), zmq_msg_size(msg), NULL)) {
-        LOG_ERROR("handle_req: msgpack_unpack_next failed\n");
+        announce_failure(socket, "msgpack_unpack_next failed");
         return (-1);
     }
 
     obj = pack.data;
 
     if (obj.type != MSGPACK_OBJECT_ARRAY) {
-        LOG_ERROR("handle_req: not an array\n");
-        pcma_send(socket, failed_packfn, "not an array");
+        announce_failure(socket, "not an array");
         return (-2);
     }
 
     const char *command = (const char *) obj.via.array.ptr[0].via.raw.ptr;
     int command_size = obj.via.array.ptr[0].via.raw.size;
     if (!command) {
-        LOG_ERROR("handle_req: no command\n");
-        pcma_send(socket, failed_packfn, "no command");
+        announce_failure(socket, "no command");
         return (-3);
     }
 
@@ -192,8 +252,7 @@ int handle_req(void *socket, zmq_msg_t * msg)
                !bcmp(UNLOCK_COMMAND, command, UNLOCK_COMMAND_SIZE)) {
         command_id = UNLOCK_COMMAND_ID;
     } else {
-        LOG_ERROR("handle_req: unknown command\n");
-        pcma_send(socket, failed_packfn, "unknown command");
+        announce_failure(socket, "unknown command");
         return (-4);
     }
 
@@ -201,27 +260,23 @@ int handle_req(void *socket, zmq_msg_t * msg)
     case PING_COMMAND_ID:
     case LIST_COMMAND_ID:
         if (obj.via.array.size != 1) {
-            LOG_ERROR("handle_req: no parameter expected\n");
-            pcma_send(socket, failed_packfn, "no parameter expected");
+            announce_failure(socket, "no parameter expected");
             return (-5);
         }
         break;
     case LOCK_COMMAND_ID:
     case UNLOCK_COMMAND_ID:
         if (obj.via.array.size != 2) {
-            LOG_ERROR("handle_req: 1 parameter expected\n");
-            pcma_send(socket, failed_packfn, "1 parameter expected");
+            announce_failure(socket, "1 parameter expected");
             return (-6);
         }
         if (obj.via.array.ptr[1].type != MSGPACK_OBJECT_RAW) {
-            LOG_ERROR("handle_req: RAW parameter expected\n");
-            pcma_send(socket, failed_packfn, "RAW parameter expected");
+            announce_failure(socket, "RAW parameter expected");
             return (-7);
         }
         path = raw_to_string(&obj.via.array.ptr[1].via.raw);
         if (!path) {
-            perror("raw_to_string");
-            pcma_send(socket, failed_packfn, "raw_to_string failure");
+            announce_failure(socket, "raw_to_string failed");
         }
     }
 
@@ -254,31 +309,23 @@ int loop(void *socket)
     zmq_msg_t msg;
 
     for (;;) {
-        if (should_exit)
-            return(0);
-
         if (zmq_msg_init(&msg) < 0) {
-            perror("zmq_msg_init");
+            g_warning("loop: zmq_msg_init: %s", strerror(errno));
             continue;
         }
 
         if (zmq_recv(socket, &msg, 0) < 0) {
-            if (errno == EINTR) {
+            if (errno == EINTR)
                 continue;
-            } else {
-                perror("zmq_recv");
-                return (-1);
-            }
+            else
+                g_error("loop: zmq_recv: %s", strerror(errno));
         }
 
-        ret = handle_req(socket, &msg);
-        if (ret < 0) {
-            LOG_ERROR("handle_req failed with %i\n", ret);
-        }
+        if ((ret = handle_req(socket, &msg)) < 0)
+            g_warning("loop: handle_req: %i", ret);
 
-        if (zmq_msg_close(&msg) < 0) {
-            perror("zmq_msg_close");
-        }
+        if (zmq_msg_close(&msg) < 0)
+            g_warning("loop: zmq_msg_close: %s", strerror(errno));
     }
 
     return (-42);               /* Yiipee! */
@@ -294,96 +341,59 @@ void help(const char *name)
     exit(EXIT_FAILURE);
 }
 
-void sh_termination(int signum)
+int daemon_leave(int signum)
 {
-    should_exit = 1;
-    LOG_INFO("Signal %i received\n", signum);
-    if (LOGGING_DEBUG) {
-        mfl_print(&mfl);
-    }
-}
+    g_info("Signal %i received", signum);
 
-void sh_abrt(int signum)
-{
-    LOG_INFO("SIGABRT received\n");
-    mfl_print(&mfl);
-    if (pcmad_ctx)
-        zmq_term(pcmad_ctx);
-    exit(-1);
-}
+    lockfiles_print(lockfiles);
 
-void sh_usr1(int signum)
-{
-    LOG_INFO("SIGUSR1 received\n");
-    mfl_print(&mfl);
-}
-
-int setup_sig(int signum, void (*sh)(int), int keep_ignoring)
-{
-    int ret;
-    struct sigaction new, old;
-
-    sigemptyset (&new.sa_mask);
-    new.sa_flags = 0;
-    new.sa_handler = sh;
-
-    ret = sigaction (signum, NULL, &old);
-    if (ret < 0) {
-        perror("sigaction(old)");
+    if (pcmad_sock && (zmq_close(pcmad_sock) < 0))
         return(-1);
-    }
-
-    if (keep_ignoring && old.sa_handler == SIG_IGN) {
-        LOG_DEBUG("ignoring signal %i\n", signum);
-    } else {
-        ret = sigaction (signum, &new, NULL);
-        if (ret < 0) {
-            perror("sigaction(new)");
-            return(-2);
-        }
-    }
+    if (pcmad_ctx && (zmq_term(pcmad_ctx) < 0))
+        return(-2);
+    if (lockfiles)
+        g_hash_table_unref (lockfiles);
 
     return(0);
 }
 
-int setup_signals()
+void sh_termination(int signum)
 {
-    int ret;
+    if (daemon_leave(signum) < 0)
+        exit(EXIT_FAILURE);
+    exit(EXIT_SUCCESS);
+}
 
-    ret = setup_sig(SIGTERM, sh_termination, 1);
-    if (ret < 0) {
-        LOG_ERROR("setup_sig SIGTERM returned %i\n", ret);
-        return(-1);
-    }
-    ret = setup_sig(SIGINT, sh_termination, 1);
-    if (ret < 0) {
-        LOG_ERROR("setup_sig SIGINT returned %i\n", ret);
-        return(-2);
-    }
-    ret = setup_sig(SIGQUIT, sh_termination, 1);
-    if (ret < 0) {
-        LOG_ERROR("setup_sig SIGQUIT returned %i\n", ret);
-        return(-3);
-    }
-    ret = setup_sig(SIGUSR1, sh_usr1, 0);
-    if (ret < 0) {
-        LOG_ERROR("setup_sig SIGUSR1 returned %i\n", ret);
-        return(-4);
-    }
-    ret = setup_sig(SIGABRT, sh_abrt, 0);
-    if (ret < 0) {
-        LOG_ERROR("setup_sig SIGABRT returned %i\n", ret);
-        return(-5);
-    }
+void sh_abrt(int signum)
+{
+    daemon_leave(signum);
+    exit(EXIT_FAILURE);
+}
+
+void sh_usr1(int signum)
+{
+    g_info("SIGUSR1 received");
+    mfl_print(&mfl);
+}
+
+void setup_signals()
+{
+    setup_sig(SIGTERM, sh_termination, 1);
+    setup_sig(SIGINT, sh_termination, 1);
+    setup_sig(SIGQUIT, sh_termination, 1);
+    setup_sig(SIGUSR1, sh_usr1, 0);
+    setup_sig(SIGABRT, sh_abrt, 0);
 }
 
 int main(int argc, char **argv)
 {
     int ret, opt;
-    void *socket = NULL;
     const char *endpoint = default_ep;
 
-    while ((opt = getopt(argc, argv, "ve:")) != -1) {
+    lockfiles = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, mlockfile_release);
+    setup_signals();
+
+    while ((opt = getopt(argc, argv, "e:")) != -1) {
         switch (opt) {
         case 'e':
             endpoint = optarg;
@@ -396,32 +406,23 @@ int main(int argc, char **argv)
         }
     }
 
-    g_message("using endpoint %s", endpoint);
-
-    ret = setup_signals();
-    if (ret < 0)
-        g_error("setup_signals returned %i", ret);
+    g_info("using endpoint %s", endpoint);
 
     if (!(pcmad_ctx = zmq_init(1)))
-        MAIN_ERR_FAIL("zmq_init");
-    if (!(socket = zmq_socket(pcmad_ctx, ZMQ_REP)))
-        MAIN_ERR_FAIL("zmq_socket");
-    if (zmq_bind(socket, endpoint) < 0)
-        MAIN_ERR_FAIL("zmq_bind");
+        g_error("zmq_init: %s", strerror(errno));
 
-    ret = loop(socket);
-    if (ret < 0) {
-        LOG_ERROR("loop returned %i\n", ret);
-        goto err;
-    }
+    if (!(pcmad_sock = zmq_socket(pcmad_ctx, ZMQ_REP)))
+        g_error("zmq_socket: %s", strerror(errno));
 
-    if (zmq_term(pcmad_ctx) < 0)
-        MAIN_ERR_FAIL("zmq_term");
+    if (zmq_bind(pcmad_sock, endpoint) < 0)
+        g_error("zmq_bind: %s", strerror(errno));
+
+    loop(pcmad_sock);
+
+    if (pcmad_sock && zmq_close(pcmad_sock) < 0)
+        g_error("zmq_close: %s", strerror(errno));
+    if (pcmad_ctx && zmq_term(pcmad_ctx) < 0)
+        g_error("zmq_term: %s", strerror(errno));
 
     return (EXIT_SUCCESS);
-
-  err:
-    if (pcmad_ctx)
-        zmq_term(pcmad_ctx);
-    return (EXIT_FAILURE);
 }

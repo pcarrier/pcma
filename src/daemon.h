@@ -1,9 +1,8 @@
 #ifndef PCMA__DAEMON_H
 #define PCMA__DAEMON_H
 
-struct mlockfile_list *mfl = NULL;
 const char *default_name = "pcmad";
-int should_exit = 0;
-void *pcmad_ctx = NULL;
+void *pcmad_ctx = NULL, *pcmad_sock = NULL;
+GHashTable *lockfiles = NULL;
 
 #endif /* PCMA__DAEMON_H */

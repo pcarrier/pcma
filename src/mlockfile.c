@@ -1,3 +1,4 @@
+#include <glib.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,89 +8,65 @@
 #include "common.h"
 #include "mlockfile.h"
 
-struct mlockfile *mlockfile_init(const char *path)
+struct mlockfile *mlockfile_init()
 {
-    struct mlockfile *f = malloc(sizeof(struct mlockfile));
-    if (!f) {
-        perror("mlockfile_init struct alloc");
-        return (NULL);
-    }
-
-    int path_length = strlen(path) + 1;
-
-    f->path = malloc(path_length);
-    if (!(f->path)) {
-        perror("mlockfile_init path alloc");
-        free(f);
-        return (NULL);
-    }
-
-    memcpy(f->path, path, path_length);
+    struct mlockfile *f = g_new0(mlockfile, 1);
     f->fd = -1;
-    f->mmappedsize = 0;
-    f->mmapped = NULL;
-
     return (f);
 }
 
-void mlockfile_release(struct mlockfile *f)
+void mlockfile_destroy(gpointer *p)
 {
-    if (f->mmapped) {
-        if (munlock(f->mmapped, f->mmappedsize) < 0)
-            perror("mlockfile_release munlock");
-        if (munmap(f->mmapped, f->mmappedsize) < 0)
-            perror("mlockfile_release munmap");
-    }
-    if (f->fd > -1) {
-        if (close(f->fd) < 0)
-            perror("mlockfile_release close");
-        LOG_DEBUG("closed fd %i for %s\n", f->fd, f->path);
-    }
+    struct mlockfile *f = (struct mlockfile *)p;
 
-    free(f->path);
-    free(f);
+    int res;
+    if ((res = mlockfile_unlock(f)) < 0)
+        g_critical("mlockfile_release: mlockfile_unlock: %i", res);
+
+    g_list_free (p->tags);
+    m_free (p);
 }
 
-int mlockfile_lock(struct mlockfile *f)
+int mlockfile_lock(const gchar *path, struct mlockfile *f)
 {
     struct stat stats;
     char *mmapped;
 
     if (f->fd < 0) {
-        f->fd = open(f->path, O_RDONLY);
+        f->fd = open(path, O_RDONLY);
         if (f->fd < 0) {
-            perror("mlockfile_lock open");
+            g_critical("mlockfile_lock: open: %s", strerror(errno));
             return (-1);
         }
-        LOG_DEBUG("opened fd %i for %s\n", f->fd, f->path);
+        g_debug("opened fd %i for %s", f->fd, path);
     }
 
     if (fstat(f->fd, &stats) < 0) {
-        perror("mlockfile_lock stat");
+        g_critical("mlockfile_lock: stat: %s", strerror(errno));
         return (-2);
     }
 
     mmapped = mmap(NULL, stats.st_size,
                    PROT_READ, MAP_SHARED | MAP_FILE, f->fd, (off_t) 0);
     if (mmapped == MAP_FAILED) {
-        perror("mlockfile_lock mmap");
+        g_critical("mlockfile_lock: mmap: %s", strerror(errno));
         return (-3);
     }
 
     if (mlock(mmapped, stats.st_size) < 0) {
-        perror("mlockfile_lock mlock");
+        g_critical("mlockfile_lock: mlock: %s", strerror(errno));
         if (munmap(mmapped, stats.st_size) < 0)
-            perror("mlockfile_lock mlock failure munmap");
+            g_critical("mlockfile_lock: mlock failure: munmap: ");
         return (-4);
     }
 
     if (f->mmapped) {
-        LOG_INFO("relocked %s (%li -> %li bytes)\n",
-                 f->path, (long) f->mmappedsize, (long) stats.st_size);
+        g_debug("relocked %s (%li -> %li bytes)",
+                 path, (long) f->mmappedsize, (long) stats.st_size);
         if (munlock(f->mmapped, f->mmappedsize) < 0)
-            perror("mlockfile_lock munlock");
+            g_critical("mlockfile_lock: munlock: %s", strerror(errno));
         if (munmap(f->mmapped, f->mmappedsize) < 0)
-            perror("mlockfile_lock munmap");
+            g_critical("mlockfile_lock: munmap: %s", strerror(errno));
     }
 
     f->mmapped = mmapped;
@@ -98,90 +75,23 @@ int mlockfile_lock(struct mlockfile *f)
     return (0);
 }
 
-size_t mfl_length(struct mlockfile_list * list)
-{
-    size_t counter = 0;
-    struct mlockfile_list *itr = list;
-    while (itr != NULL) {
-        itr = itr->next;
-        counter++;
-    }
-    return counter;
-}
-
-struct mlockfile_list *mfl_find_path(struct mlockfile_list *head,
-                                     const char *path)
-{
-    struct mlockfile_list *itr = head;
-    while (itr != NULL) {
-        if (!strcmp(itr->file->path, path))
-            return itr;
-        itr = itr->next;
-    }
-    return NULL;
-}
-
-int mfl_add(struct mlockfile_list **l, struct mlockfile *f)
-{
-    struct mlockfile_list *e = malloc(sizeof(struct mlockfile_list));
-    if (e < 0)
-        return (-1);
-
-    e->file = f;
-    e->next = *l;
-    *l = e;
-    return (0);
-}
-
-int mfl_remove(struct mlockfile_list **list, struct mlockfile_list *entry)
-{
-    struct mlockfile_list *itr = *list, *previous = NULL;
-
-    while (itr != NULL && itr != entry) {
-        previous = itr;
-        itr = itr->next;
-    }
-
-    if (!itr)
-        return (-1);
-
-    if (previous == NULL)
-        *list = itr->next;
-    else
-        previous->next = itr->next;
-
-    mlockfile_release(itr->file);
-    free(itr);
-    return (0);
-}
-
-int mfl_print(struct mlockfile_list **list)
-{
-    int ret;
-    struct mlockfile_list *itr;
-    struct mlockfile *f;
-    const char *printf_perror = "mlf_print printf";
-
-    ret = printf("List of files: ---\n");
-    if (ret < 0) {
-        perror(printf_perror);
-        return(-1);
-    }
-
-    for (itr = *list; itr != NULL; itr = itr->next) {
-        f = itr->file;
-        ret = printf("%s (fd %i, %li bytes)\n", f->path, f->fd, f->mmappedsize);
-        if (ret < 0) {
-            perror(printf_perror);
+int mlockfile_unlock(struct mlockfile *f) {
+    if (f->mmapped) {
+        if (munlock(f->mmapped, f->mmappedsize) < 0) {
+            g_critical("mlockfile_release: munlock: %s", strerror(errno));
+            return(-1);
+        }
+        if (munmap(f->mmapped, f->mmappedsize) < 0) {
+            g_critical("mlockfile_release: munmap: %s", strerror(errno));
             return(-2);
         }
     }
-
-    ret = printf("--- end of list ---\n");
-    if (ret < 0) {
-        perror(printf_perror);
-        return(-3);
+    if (f->fd > -1) {
+        if (close(f->fd) < 0) {
+            g_critical("mlockfile_release: close: %s", strerror(errno));
+            return(-3);
+        }
+        g_debug("closed fd %i for %s", f->fd, f->path);
     }
-
-    return 0;
+    return(0);
 }

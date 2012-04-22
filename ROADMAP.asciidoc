@@ -5,7 +5,7 @@ v0.2.0
 ------
 
 [compact]
-* glib dependency
+* *DONE* glib dependency
 * Tags
 ** When locking a file, tags can be specified
    and are added to the tags for the file

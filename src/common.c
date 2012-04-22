@@ -1,9 +1,29 @@
+#include <glib.h>
 #include <msgpack.h>
+#include <signal.h>
 #include <string.h>
 #include <zmq.h>
-#include "macros.h"
 
 const char *default_ep = "ipc:///var/run/pcma.socket";
+
+void setup_sig(int signum, void (*sh)(int), int keep_ignoring)
+{
+    struct sigaction new, old;
+
+    sigemptyset (&new.sa_mask);
+    new.sa_flags = 0;
+    new.sa_handler = sh;
+
+    if (sigaction (signum, NULL, &old) < 0)
+        g_error("sigaction(%i,old): %s", signum, strerror(errno));
+
+    if (keep_ignoring && old.sa_handler == SIG_IGN) {
+        g_debug("ignoring signal %i", signum);
+    } else {
+        if (sigaction (signum, &new, NULL) < 0)
+            g_error("sigaction(%i,new): %s", signum, strerror(errno));
+    }
+}
 
 char *raw_to_string(msgpack_object_raw * raw)
 {
@@ -12,6 +32,8 @@ char *raw_to_string(msgpack_object_raw * raw)
     if (res) {
         memcpy(res, raw->ptr, raw->size);
         res[raw->size] = '\0';
+    } else {
+        g_critical("raw_to_string: %s", strerror(errno));
     }
     return res;
 }
@@ -30,19 +52,19 @@ int pcma_send(void *socket,
     msgpack_sbuffer *buffer = msgpack_sbuffer_new();
 
     if (!buffer) {
-        LOG_ERROR("msgpack_sbuffer_new failed in pcma_send\n");
+        g_critical("pcma_send: msgpack_sbuffer_new failed");
         return (-1);
     }
 
     msgpack_packer *pk = msgpack_packer_new(buffer, msgpack_sbuffer_write);
 
     if (!pk) {
-        LOG_ERROR("msgpack init failed in pcma_send\n");
+        g_critical("pcma_send: msgpack init failed");
         return (-2);
     }
 
     if (pack_fn(pk, data) < 0) {
-        LOG_ERROR("pack function failed in pcma_send\n");
+        g_critical("pcma_send: pack function failed");
         return (-3);
     }
 
@@ -51,20 +73,17 @@ int pcma_send(void *socket,
     if (zmq_msg_init_data(&msg,
                           (void *) buffer->data, buffer->size,
                           zmq_free_helper, buffer) < 0) {
-        perror("zmq_msg_init_data");
-        LOG_ERROR("pcma_send could not proceed\n");
+        g_critical("pcma_send: zmq_msg_init_data: %s", strerror(errno));
         return (-4);
     }
 
     if (zmq_send(socket, &msg, 0) < 0) {
-        perror("zmq_send");
-        LOG_ERROR("pcma_send could not proceed\n");
+        g_critical("pcma_send: zmq_send: %s", strerror(errno));
         return (-5);
     }
 
     if (zmq_msg_close(&msg) < 0) {
-        perror("zmq_msg_close");
-        LOG_ERROR("pcma_send is likely leaking\n");
+        g_critical("pcma_send: zmq_msg_close: %s", strerror(errno));
     }
 
     return (0);
