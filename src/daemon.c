@@ -366,7 +366,7 @@ int setup_signals()
 int main(int argc, char **argv)
 {
     int ret, opt;
-    void *ctx = NULL, *socket = NULL;
+    void *socket = NULL;
     const char *endpoint = default_ep;
 
     while ((opt = getopt(argc, argv, "ve:")) != -1) {
@@ -393,9 +393,9 @@ int main(int argc, char **argv)
         goto err;
     }
 
-    if (!(ctx = zmq_init(1)))
+    if (!(pcmad_ctx = zmq_init(1)))
         MAIN_ERR_FAIL("zmq_init");
-    if (!(socket = zmq_socket(ctx, ZMQ_REP)))
+    if (!(socket = zmq_socket(pcmad_ctx, ZMQ_REP)))
         MAIN_ERR_FAIL("zmq_socket");
     if (zmq_bind(socket, endpoint) < 0)
         MAIN_ERR_FAIL("zmq_bind");
@@ -406,17 +406,13 @@ int main(int argc, char **argv)
         goto err;
     }
 
-    if (zmq_close(socket) < 0)
-        MAIN_ERR_FAIL("zmq_close");
-    if (zmq_term(ctx) < 0)
+    if (zmq_term(pcmad_ctx) < 0)
         MAIN_ERR_FAIL("zmq_term");
 
     return (EXIT_SUCCESS);
 
   err:
-    if (socket)
-        zmq_close(socket);
-    if (ctx)
-        zmq_term(ctx);
+    if (pcmad_ctx)
+        zmq_term(pcmad_ctx);
     return (EXIT_FAILURE);
 }
