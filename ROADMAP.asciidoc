@@ -25,7 +25,7 @@ v0.3.0
 [compact]
 * Configuration
 ** Use a system-wide .desktop file to specify verbosity and endpoints
-** Remove '-vv' in init scripts
+** *DONE* Remove '-vv' in init scripts
 ** Support for multiple endpoints
 * Multithreading
 * Add (re)locking timestamp and file descriptor in file arrays
