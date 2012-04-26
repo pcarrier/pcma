@@ -10,6 +10,7 @@ oom never
 
 pre-start script
     test -x @bindir@/pcmad || { stop; exit 0; }
+    umask 000
 end script
 
 exec @bindir@/pcmad

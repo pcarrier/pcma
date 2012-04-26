@@ -19,6 +19,7 @@ CLIENT_TIMEOUT=1000
 DAEMON=@bindir@/$NAME
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
+UMASK=000
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
@@ -31,6 +32,8 @@ SCRIPTNAME=/etc/init.d/$NAME
 
 # Define LSB log_* functions.
 . /lib/lsb/init-functions
+
+umask $UMASK
 
 do_start()
 {

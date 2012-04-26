@@ -23,6 +23,13 @@ OPTIONS
 *-e* 'ENDPOINT':
   Specify the endpoint to bind to. Defaults to +ipc:///var/run/pcma.socket+.
 
+WARNING
+-------
+
+The provided init scripts default to a umask of 000, which makes the default
+endpoint accessible to all services. A change is required if local users are
+not fully trusted with the exposed functionalities.
+
 BUGS
 ----
 See https://github.com/pcarrier/pcma/issues
