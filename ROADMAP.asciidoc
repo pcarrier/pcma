@@ -1,24 +1,6 @@
 ROADMAP
 =======
 
-v0.2.0
-------
-
-[compact]
-* *DONE* glib dependency
-* Tags
-** When locking a file, tags can be specified
-   and are added to the tags for the file
-** When unlocking a tag, for all files:
-*** If this tag and only this tag, unlock
-*** If this tag and more, remove the tag
-* *DONE* Signal handlers
-** List locked files
-*** on SIGUSR1
-*** on INT/QUIT/TERM with -vv
-** Log starting on -v
-** Log INT/QUIT/TERM on -v
-
 v0.3.0
 ------
 
