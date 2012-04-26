@@ -10,24 +10,24 @@
 
 struct mlockfile *mlockfile_init()
 {
-    struct mlockfile *f = g_new0(mlockfile, 1);
+    struct mlockfile *f = g_new0(struct mlockfile, 1);
     f->fd = -1;
     return (f);
 }
 
-void mlockfile_destroy(gpointer *p)
+void mlockfile_destroy(gpointer p)
 {
-    struct mlockfile *f = (struct mlockfile *)p;
+    struct mlockfile *f = (struct mlockfile *) p;
 
     int res;
     if ((res = mlockfile_unlock(f)) < 0)
         g_critical("mlockfile_release: mlockfile_unlock: %i", res);
 
-    g_list_free (p->tags);
-    m_free (p);
+    g_list_free(f->tags);
+    g_free(f);
 }
 
-int mlockfile_lock(const gchar *path, struct mlockfile *f)
+int mlockfile_lock(const gchar * path, struct mlockfile *f)
 {
     struct stat stats;
     char *mmapped;
@@ -62,7 +62,7 @@ int mlockfile_lock(const gchar *path, struct mlockfile *f)
 
     if (f->mmapped) {
         g_debug("relocked %s (%li -> %li bytes)",
-                 path, (long) f->mmappedsize, (long) stats.st_size);
+                path, (long) f->mmappedsize, (long) stats.st_size);
         if (munlock(f->mmapped, f->mmappedsize) < 0)
             g_critical("mlockfile_lock: munlock: %s", strerror(errno));
         if (munmap(f->mmapped, f->mmappedsize) < 0)
@@ -75,23 +75,27 @@ int mlockfile_lock(const gchar *path, struct mlockfile *f)
     return (0);
 }
 
-int mlockfile_unlock(struct mlockfile *f) {
+int mlockfile_unlock(struct mlockfile *f)
+{
     if (f->mmapped) {
         if (munlock(f->mmapped, f->mmappedsize) < 0) {
-            g_critical("mlockfile_release: munlock: %s", strerror(errno));
-            return(-1);
+            g_critical("mlockfile_unlock: munlock: %s", strerror(errno));
+            return (-1);
         }
         if (munmap(f->mmapped, f->mmappedsize) < 0) {
-            g_critical("mlockfile_release: munmap: %s", strerror(errno));
-            return(-2);
+            g_critical("mlockfile_unlock: munmap: %s", strerror(errno));
+            return (-2);
         }
+
+        f->mmapped = NULL;
     }
     if (f->fd > -1) {
         if (close(f->fd) < 0) {
-            g_critical("mlockfile_release: close: %s", strerror(errno));
-            return(-3);
+            g_critical("mlockfile_unlock: close: %s", strerror(errno));
+            return (-3);
         }
-        g_debug("closed fd %i for %s", f->fd, f->path);
+        f->fd = -1;
+        g_debug("closed fd %i", f->fd);
     }
-    return(0);
+    return (0);
 }

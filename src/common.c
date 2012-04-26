@@ -6,21 +6,21 @@
 
 const char *default_ep = "ipc:///var/run/pcma.socket";
 
-void setup_sig(int signum, void (*sh)(int), int keep_ignoring)
+void setup_sig(int signum, void (*sh) (int), int keep_ignoring)
 {
     struct sigaction new, old;
 
-    sigemptyset (&new.sa_mask);
+    sigemptyset(&new.sa_mask);
     new.sa_flags = 0;
     new.sa_handler = sh;
 
-    if (sigaction (signum, NULL, &old) < 0)
+    if (sigaction(signum, NULL, &old) < 0)
         g_error("sigaction(%i,old): %s", signum, strerror(errno));
 
     if (keep_ignoring && old.sa_handler == SIG_IGN) {
         g_debug("ignoring signal %i", signum);
     } else {
-        if (sigaction (signum, &new, NULL) < 0)
+        if (sigaction(signum, &new, NULL) < 0)
             g_error("sigaction(%i,new): %s", signum, strerror(errno));
     }
 }
@@ -87,4 +87,13 @@ int pcma_send(void *socket,
     }
 
     return (0);
+}
+
+void string_pack(gpointer data, gpointer user_data)
+{
+    msgpack_packer *pk = (msgpack_packer *) user_data;
+    const gchar *tag = (const gchar *) data;
+    size_t taglen = strlen(tag);
+    msgpack_pack_raw(pk, taglen);
+    msgpack_pack_raw_body(pk, tag, taglen);
 }

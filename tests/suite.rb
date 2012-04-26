@@ -38,6 +38,7 @@ run %w[unlock /bin/echo]
 run %w[list]
 run %w[unlock /bin/cat]
 run %w[list]
+run %w[unlock /bin/cat]
 
 $sock.close
 $ctx.close

@@ -19,14 +19,30 @@ int pcma_req_packfn(msgpack_packer * pk, void *req)
     int i, len;
     const char *str;
     const struct pcma_req *rreq = (struct pcma_req *) req;
+    GList *tags = NULL;
 
-    msgpack_pack_array(pk, (rreq->argc));
-    for (i = 0; i < rreq->argc; i++) {
-        str = rreq->argv[i];
-        len = strlen(str);
-        msgpack_pack_raw(pk, len);
-        msgpack_pack_raw_body(pk, str, len);
+    if (!strcmp(rreq->argv[0], LOCK_COMMAND)) {
+        if (rreq->argc > 2)
+            msgpack_pack_array(pk, 3);
+        else if (rreq->argc == 2)
+            msgpack_pack_array(pk, 2);
+        else
+            g_error("lock expects a path");
+
+        string_pack(rreq->argv[0], pk);
+        string_pack(rreq->argv[1], pk);
+
+        if (rreq->argc > 2) {
+            msgpack_pack_array(pk, rreq->argc - 2);
+            for (i = 2; i < rreq->argc; i++)
+                string_pack(rreq->argv[i], pk);
+        }
+    } else {
+        msgpack_pack_array(pk, rreq->argc);
+        for (i = 0; i < rreq->argc; i++)
+            string_pack(rreq->argv[i], pk);
     }
+
     return (0);
 }
 
@@ -92,15 +108,15 @@ int client_leave(int signum)
         g_info("Signal %i received", signum);
 
     if (pcmac_sock && (zmq_close(pcmac_sock) < 0))
-        return(-1);
+        return (-1);
     if (pcmac_ctx && (zmq_term(pcmac_ctx) < 0))
-        return(-2);
-    return(0);
+        return (-2);
+    return (0);
 }
 
 void main_exit()
 {
-    if(client_leave(-1) < 0 && client_exit_code == EXIT_OK)
+    if (client_leave(-1) < 0 && client_exit_code == EXIT_OK)
         exit(EXIT_LOCAL_FAILURE);
     exit(client_exit_code);
 }
