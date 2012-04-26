@@ -18,6 +18,9 @@ DESCRIPTION
 The pcmac(1) client sends a request to a pcma server, prints the returned value
 if any and exits accordingly. Requests are documented in +pcma(5)+.
 
+An exception for the "lock" command offers to provide multiple tags,
+starting from the second parameter.
+
 
 OPTIONS
 -------

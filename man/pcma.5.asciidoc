@@ -54,9 +54,9 @@ By convention, if the request failed, a string indicating the error follows.
 EXAMPLES
 ~~~~~~~~
   ["ping"] → [true]
-  ["lock", "/tmp/foo"] → [true, ["/tmp/foo", 16]]
+  ["lock", "/tmp/foo", ["foo", "bar"] ] → [true, [10, 1024, ["foo", "bar"] ] ]
   ["lock", "/tmp/doesnotexist"] → [false, "mlockfile_lock failed"]
-  ["list"] → [true, [["/tmp/foo", 16], ["/tmp/bar", 1024]]]
+  ["list"] → [true, {"/tmp/foo":[18, 1024, [] ], "/tmp/bar":[19, 2048, ["baz"] ]}]
 
 COMMANDS
 ~~~~~~~~
@@ -71,24 +71,33 @@ list
 ^^^^
 Description:: Lists all files currently locked.
 Parameters:: None.
-Returns:: Array of files locked in memory. Each file is an array +[path, ...]+.
-We might add or remove extra objects to each file array as we see fit.
-Currently, the second field contains the locked size in bytes.
+Returns:: Map of files locked in memory, the value takes the form
++[fd, size, ["list", "of", "tags"] ]+.
 
 lock
 ^^^^
 Description:: Locks a file in memory.
-If this file is already locked, it will be re-locked and its
-new size will be taken into account.
+If this file is already locked, it will be re-locked and its new size
+will be taken into account.
 The previous lock is kept until completion.
-Parameters:: Path of the file.
-Returns:: Corresponding file object (see +list+).
+If tags are provided, they are added to the file's tag list when absent.
+Parameters:: Path of the file, optional list of tags
+Returns:: Corresponding file descriptor, size and tags (see +list+).
 
 unlock
 ^^^^^^
 Description:: Unlocks a file.
 Parameters:: Path of the file.
 Returns:: Nothing (see +ping+).
+
+releasetag
+^^^^^^^^^^
+Description:: Releases a tag. The tag is removed from all files ; whenever
+a file loses its last tag it gets unlocked.
+Parameters:: Tag name.
+Returns:: Number of untagged files (including unlocked ones),
+number of untagged files, number of untouched files, number of files
+that we failed to unlocked.
 
 SEE ALSO
 --------
