@@ -371,8 +371,8 @@ int handle_req(void *socket, zmq_msg_t * msg)
                         continue;       /* drops a format error silently */
                     tag =
                         raw_to_string(&
-                                      (obj.via.array.ptr[2].via.array.
-                                       ptr[i]).via.raw);
+                                      (obj.via.array.ptr[2].via.
+                                       array.ptr[i]).via.raw);
                     if (tag)
                         tags = g_list_prepend(tags, (gchar *) tag);
                     else {
@@ -497,6 +497,8 @@ int main(int argc, char **argv)
     lockfiles =
         g_hash_table_new_full(g_str_hash, g_str_equal, g_free,
                               mlockfile_destroy);
+
+    setup_logging();
     setup_signals();
 
     while ((opt = getopt(argc, argv, "e:")) != -1) {

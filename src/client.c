@@ -151,6 +151,7 @@ int main(int argc, char **argv)
     zmq_pollitem_t pollitem;
     zmq_msg_t msg;
 
+    setup_logging();
     setup_signals();
 
     if (argc < 1)

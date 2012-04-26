@@ -12,6 +12,7 @@ void zmq_free_helper(void *data, void *hint);
 int pcma_send(void *socket,
               int (*pack_fn) (msgpack_packer *, void *), void *data);
 void setup_sig(int signum, void (*sh) (int), int keep_ignoring);
+void setup_logging();
 void string_pack(gpointer data, gpointer user_data);
 
 #ifndef g_info

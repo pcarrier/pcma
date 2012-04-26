@@ -1,4 +1,4 @@
-INCLUDES = $(GLIB_CFLAGS) $(ZMQ_CFLAGS)
+AM_CPPFLAGS = $(GLIB_CFLAGS) $(ZMQ_CFLAGS)
 LIBS = $(GLIB_LIBS) $(ZMQ_LIBS) -lmsgpack
 
 bin_PROGRAMS = pcmad pcmac

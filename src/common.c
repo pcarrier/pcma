@@ -25,6 +25,12 @@ void setup_sig(int signum, void (*sh) (int), int keep_ignoring)
     }
 }
 
+void setup_logging()
+{
+    /* Dirty way to get logging with glib 2.32+ */
+    g_setenv("G_MESSAGES_DEBUG", "all", TRUE);
+}
+
 char *raw_to_string(msgpack_object_raw * raw)
 {
     char *res = malloc(raw->size + 1);
