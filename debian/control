@@ -8,6 +8,7 @@ Build-depends:
   pkg-config,
   libmsgpack-dev,
   libzmq-dev,
+  libglib2.0-dev,
   asciidoc,
   xsltproc,
   docbook-xml,
@@ -20,6 +21,7 @@ Depends:
  ${shlibs:Depends},
  ${misc:Depends},
  libmsgpack3,
- libzmq1
+ libzmq1,
+ libglib2.0-0
 Description: Page Cache My Assets
  pcma is a client/server infrastucture to (un)locks files in memory.

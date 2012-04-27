@@ -1,32 +1,15 @@
 ROADMAP
 =======
 
-v0.2.0
-------
-
-[compact]
-* glib dependency
-* Tags
-** When locking a file, tags can be specified
-   and are added to the tags for the file
-** When unlocking a tag, for all files:
-*** If this tag and only this tag, unlock
-*** If this tag and more, remove the tag
-* Signal handlers
-** List locked files
-*** on SIGUSR1
-*** on INT/QUIT/TERM with -vv
-** Log starting on -v
-** Log INT/QUIT/TERM on -v
-
 v0.3.0
 ------
 
 [compact]
 * Configuration
 ** Use a system-wide .desktop file to specify verbosity and endpoints
-** Remove '-vv' in init scripts
+** *DONE* Remove '-vv' in init scripts
 ** Support for multiple endpoints
+** Support log levels
 * Multithreading
 * Add (re)locking timestamp and file descriptor in file arrays
 * New commands

@@ -5,6 +5,7 @@ Description=Page Cache My Assets daemon
 ExecStart=@bindir@/pcmad
 OOMScoreAdjust=-1000
 StandardOutput=syslog
+UMask=000
 
 [Install]
 WantedBy=multi-user.target

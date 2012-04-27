@@ -10,7 +10,7 @@ pcmac - Page Cache My Assets client
 
 SYNOPSIS
 --------
-*pcmac* [-v...] [-t 'TIMEOUT'] [-e 'ENDPOINT'] 'REQUEST' ['PARAMETER'...]
+*pcmac* [-t 'TIMEOUT'] [-e 'ENDPOINT'] 'REQUEST' ['PARAMETER'...]
 
 
 DESCRIPTION
@@ -18,16 +18,16 @@ DESCRIPTION
 The pcmac(1) client sends a request to a pcma server, prints the returned value
 if any and exits accordingly. Requests are documented in +pcma(5)+.
 
+An exception for the "lock" command offers to provide multiple tags,
+starting from the second parameter.
+
 
 OPTIONS
 -------
-*-v*:
-  Increase the verbosity. Useful up to 3 times. At least one occurence is recommended.
-
 *-e* 'ENDPOINT':
   Specify the endpoint to connect to. Defaults to +ipc:///var/run/pcma.socket+.
 
-*-e* 'TIMEOUT':
+*-t* 'TIMEOUT':
   Specify a timeout in milliseconds. No timeout is applied by default.
 
 
