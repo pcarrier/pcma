@@ -7,11 +7,10 @@ v0.3.0
 [compact]
 * Configuration
 ** Use a system-wide .desktop file to specify verbosity and endpoints
-** *DONE* Remove '-vv' in init scripts
 ** Support for multiple endpoints
 ** Support log levels
 * Multithreading
-* Add (re)locking timestamp and file descriptor in file arrays
+* Add (re)locking timestamp
 * New commands
 ** Recursive locking of directories
 ** Background operations
