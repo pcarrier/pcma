@@ -5,6 +5,7 @@ Section: utils
 Build-depends:
   debhelper (>= 7.0.50),
   autoconf,
+  automake,
   pkg-config,
   libmsgpack-dev,
   libzmq-dev,
