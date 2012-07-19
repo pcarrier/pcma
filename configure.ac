@@ -18,8 +18,11 @@ AC_CHECK_PROGS(XSLTPROC, xsltproc)
 AC_CHECK_LIB([msgpack],[msgpack_version],[])
 
 PKG_PROG_PKG_CONFIG
-PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.16])
-PKG_CHECK_MODULES([ZMQ], [libzmq >= 2.1])
+
+PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.16],,
+	AC_MSG_ERROR([glib2 2.16 or newer not found.]))
+PKG_CHECK_MODULES([ZMQ], [libzmq >= 2.1],,
+	AC_MSG_ERROR([libzmq 2.1 or newer not found.]))
 
 AM_PROG_CC_C_O
 
