@@ -1,10 +1,10 @@
-pcma (0.2.0) unstable; urgency=low
+pcma (0.2.0) precise; urgency=low
 
   * Upstream 0.2.0 release.
 
  -- Pierre Carrier <pierre@spotify.com>  Thu, 26 Apr 2012 22:26:40 +0200
 
-pcma (0.1.0) unstable; urgency=low
+pcma (0.1.0) precise; urgency=low
 
   * Initial upstream release.
 
