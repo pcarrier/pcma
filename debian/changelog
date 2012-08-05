@@ -1,3 +1,9 @@
+pcma (0.2.1) precise; urgency=low
+
+  * Upstream 0.2.1 release.
+
+ -- Pierre Carrier <pierre@spotify.com>  Sun, 05 Aug 2012 05:08:09 +0100
+
 pcma (0.2.0) precise; urgency=low
 
   * Upstream 0.2.0 release.
