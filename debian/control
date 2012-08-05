@@ -13,7 +13,8 @@ Build-depends:
   asciidoc,
   xsltproc,
   docbook-xml,
-  docbook-xsl
+  docbook-xsl,
+  libxml2-utils
 Standards-Version: 3.9.3.1
 
 Package: pcma
