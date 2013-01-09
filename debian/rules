@@ -9,5 +9,5 @@ override_dh_installinit:
 .PHONY: build
 build:
 	dh $@ --before dh_auto_configure
-	./prepare.sh
+	./autogen.sh
 	dh $@ --remaining

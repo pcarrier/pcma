@@ -1,5 +1,5 @@
 #!/bin/sh
 set -xe
-./prepare.sh
+./autogen.sh
 ./configure $@
 make
