@@ -237,7 +237,7 @@ void releasetag(gpointer key, gpointer value, gpointer user_data)
         if (g_list_length(file->tags) == 0) {
             ret = mlockfile_unlock(file);
             if (ret < 0) {
-                g_critical("relesetag: mlockfile_unlock: %i", ret);
+                g_critical("releasetag: mlockfile_unlock: %i", ret);
                 data->failed++;
             } else {
                 data->unlocked++;
