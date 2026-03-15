@@ -6,7 +6,7 @@
 # Required-Stop:     $local_fs $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Pache Cache My Assets daemon
+# Short-Description: Page Cache My Assets daemon
 ### END INIT INFO
 
 # Author: Pierre Carrier <pierre@spotify.com>

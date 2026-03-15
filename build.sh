@@ -1,5 +1,5 @@
 #!/bin/sh
 set -xe
 ./autogen.sh
-./configure $@
+./configure "$@"
 make

@@ -25,4 +25,4 @@ Depends:
  libzmq1,
  libglib2.0-0
 Description: Page Cache My Assets
- pcma is a client/server infrastucture to (un)locks files in memory.
+ pcma is a client/server infrastructure to (un)lock files in memory.

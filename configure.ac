@@ -9,11 +9,7 @@ AC_CHECK_PROGS(XSLTPROC, xsltproc, "no")
 
 if test "x$A2X"     = xno; then AC_MSG_ERROR([a2x is required]); fi
 if test "x$XMLLINT" = xno; then AC_MSG_ERROR([xmllint is required]); fi
-if test "x$XSLPROC" = xno; then AC_MSG_ERROR([xsltproc is required]); fi
-
-AC_CHECK_PROGS(ASCIIDOC, asciidoc)
-AC_CHECK_PROGS(XMLLINT, xmllint)
-AC_CHECK_PROGS(XSLTPROC, xsltproc)
+if test "x$XSLTPROC" = xno; then AC_MSG_ERROR([xsltproc is required]); fi
 
 AC_CHECK_LIB([msgpack],[msgpack_version],[])
 
