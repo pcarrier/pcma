@@ -19,8 +19,6 @@ int pcma_req_packfn(msgpack_packer * pk, void *req)
     int i, len;
     const char *str;
     const struct pcma_req *rreq = (struct pcma_req *) req;
-    GList *tags = NULL;
-
     if (!strcmp(rreq->argv[0], LOCK_COMMAND)) {
         if (rreq->argc > 2)
             msgpack_pack_array(pk, 3);
@@ -145,7 +143,6 @@ void setup_signals()
 int main(int argc, char **argv)
 {
     int ret, opt;
-    void *socket = NULL;
     const char *endpoint = default_ep;
     struct pcma_req req;
     zmq_pollitem_t pollitem;

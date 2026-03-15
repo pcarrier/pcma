@@ -25,7 +25,7 @@ void lockfile_print(gpointer key, gpointer value, gpointer user_data)
     struct mlockfile *f = (struct mlockfile *) value;
 
     if (g_printf
-        ("%s, %li bytes, fd: %i, tags: ", name, f->fd, f->mmappedsize) < 0)
+        ("%s, %li bytes, fd: %i, tags: ", name, (long) f->mmappedsize, f->fd) < 0)
         g_critical(errmsg, strerror(errno));
 
     g_list_foreach(f->tags, lockfile_print_tag, NULL);
@@ -151,6 +151,7 @@ void handle_lock_request(void *socket, const gchar * path, GList * tags)
         if (!(file = mlockfile_init(path))) {
             g_critical("mlockfile_init failed");
             pcma_send(socket, failed_packfn, "mlockfile_init failed");
+            return;
         }
     }
 
@@ -160,6 +161,7 @@ void handle_lock_request(void *socket, const gchar * path, GList * tags)
     if (ret < 0) {
         g_critical("mlockfile_lock: %i", ret);
         pcma_send(socket, failed_packfn, "mlockfile_lock failed");
+        return;
     }
 
     if (!found)
@@ -221,10 +223,9 @@ int release_tag_data_packfn(msgpack_packer * pk, void *rtdp)
     return (0);
 }
 
-void releasetag(gpointer key, gpointer value, gpointer user_data)
+gboolean releasetag(gpointer key, gpointer value, gpointer user_data)
 {
     struct release_tag_data *data = user_data;
-    const gchar *name = (const gchar *) key;
     struct mlockfile *file = (struct mlockfile *) value;
     GList *found = NULL;
     int ret;
@@ -243,12 +244,12 @@ void releasetag(gpointer key, gpointer value, gpointer user_data)
                 data->unlocked++;
             }
 
-            if (g_hash_table_remove(lockfiles, key) == FALSE)
-                g_error("releasetag: g_hash_table_remove failed");
+            return TRUE;
         }
     } else {
         data->untouched++;
     }
+    return FALSE;
 }
 
 void handle_releasetag_request(void *socket, const gchar * tag)
@@ -258,7 +259,7 @@ void handle_releasetag_request(void *socket, const gchar * tag)
 
     g_info("releasetag request (%s)", tag);
 
-    g_hash_table_foreach(lockfiles, releasetag, &data);
+    g_hash_table_foreach_remove(lockfiles, releasetag, &data);
 
     if (data.untagged == 0) {
         g_warning("handle_releasetag_request: nothing was tagged %s", tag);
@@ -402,7 +403,7 @@ int handle_req(void *socket, zmq_msg_t * msg)
     if (path)
         free((char *) path);
     if (tags)
-        g_list_free(tags);
+        g_list_free_full(tags, free);
 
     return 0;
 }

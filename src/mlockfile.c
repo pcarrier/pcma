@@ -23,7 +23,7 @@ void mlockfile_destroy(gpointer p)
     if ((res = mlockfile_unlock(f)) < 0)
         g_critical("mlockfile_release: mlockfile_unlock: %i", res);
 
-    g_list_free(f->tags);
+    g_list_free_full(f->tags, g_free);
     g_free(f);
 }
 
@@ -94,8 +94,8 @@ int mlockfile_unlock(struct mlockfile *f)
             g_critical("mlockfile_unlock: close: %s", strerror(errno));
             return (-3);
         }
-        f->fd = -1;
         g_debug("closed fd %i", f->fd);
+        f->fd = -1;
     }
     return (0);
 }

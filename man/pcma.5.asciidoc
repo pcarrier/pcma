@@ -16,7 +16,7 @@ IMPLEMENTATION
 - Protocol based on ØMQ and MessagePack.
 - Single-threaded C server. See +pcmad(1)+.
 - Single-threaded, single request C client. See +pcmac(1)+.
-- Trivial test client providing an example Ruby implementation, +test/suite.rb+.
+- Trivial test client providing an example Ruby implementation, +tests/suite.rb+.
 - Files are locked using +mmap(2)+ and +mlock(2)+.
 - Locking only affects the beginning of the file, up to the size observed
   when locking. Files can be re-locked if needed.
